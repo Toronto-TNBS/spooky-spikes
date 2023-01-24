@@ -322,10 +322,11 @@ class SpikeAnalysis:
 
 
     def get_event_peaks(self, times, magnitudes, threshold):
+        min_dist = round(1.5/1000 * self.main_fs)
         if self.segment_inverted:
-            peaks = find_peaks(magnitudes, height=threshold)
+            peaks = find_peaks(magnitudes, height=threshold, distance=min_dist)
         else:
-            peaks = find_peaks(-np.array(magnitudes), height=-threshold)
+            peaks = find_peaks(-np.array(magnitudes), height=-threshold, distance=min_dist)
         peaks_index = peaks[0]
         return np.array([times[peaks_index], magnitudes[peaks_index], peaks_index])
 
