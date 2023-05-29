@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from spikedata.readsavedata import ReadSpike
 from spikedata.spikeanalysis import SpikeAnalysis
 import numpy as np
-
+import sys
 import base64
 from images import base64_image
 
@@ -752,7 +752,15 @@ class App(GUIStyles):
 
 
 
-        self.mainloop()
+        self.event_loop()
+
+    def event_loop(self):
+        while True:
+            self.update()
+            try:
+                self.state()
+            except:
+                sys.exit()
 
 
     def dynamic_resize(self):
