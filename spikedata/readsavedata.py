@@ -16,12 +16,10 @@ class ReadSpike:
         self.burst_index = 0
         self.cov = 0
         self.silhouette = 0
-        self.delta_power = 0
         self.theta_power = 0
         self.alpha_power = 0
         self.low_beta_power = 0
         self.high_beta_power = 0
-        self.gamma_power = 0
 
         self.threshold = None
         self.threshold_factor = None
@@ -189,12 +187,10 @@ class ReadSpike:
                 'Burst_Index': self.burst_index,
                 'CoV': self.cov,
                 'Silhouette': self.silhouette,
-                'Delta_Power': self.delta_power,
                 'Theta_Power': self.theta_power,
                 'Alpha_Power': self.alpha_power,
                 'Low_Beta_Power': self.low_beta_power,
                 'High_Beta_Power': self.high_beta_power,
-                'Gamma_Power': self.gamma_power
             },
             index=[0]
         )

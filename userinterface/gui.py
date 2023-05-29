@@ -222,22 +222,6 @@ class App(GUIStyles):
         )
         self.label_variation_coefficient_output.grid(column=1, row=15, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
 
-        self.label_delta = ttk.Label(
-            text='Delta oscillatory power:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_delta.grid(column=0, row=16, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_delta_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_delta_output.grid(column=1, row=16, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
         self.label_theta = ttk.Label(
             text='Theta oscillatory power:',
             style='outputs.TLabel',
@@ -301,22 +285,6 @@ class App(GUIStyles):
             width=self.label_output_width
         )
         self.label_high_beta_output.grid(column=1, row=20, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_gamma = ttk.Label(
-            text='Gamma oscillatory power:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_gamma.grid(column=0, row=21, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_gamma_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_gamma_output.grid(column=1, row=21, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
 
         self.header_export = ttk.Label(
             text='Export:',
@@ -1306,12 +1274,10 @@ class App(GUIStyles):
             self.label_firing_rate_output['text'] = ''
             self.label_burst_index_output['text'] = ''
             self.label_variation_coefficient_output['text'] = ''
-            self.label_delta_output['text'] = ''
             self.label_theta_output['text'] = ''
             self.label_alpha_output['text'] = ''
             self.label_low_beta_output['text'] = ''
             self.label_high_beta_output['text'] = ''
-            self.label_gamma_output['text'] = ''
 
             read.threshold = None
             read.threshold_factor = None
@@ -1639,9 +1605,7 @@ class App(GUIStyles):
             read.silhouette = silhouette
             self.label_silhouette_output['text'] = round(silhouette, 2)
 
-        delta_power, theta_power, alpha_power, low_beta_power, high_beta_power, gamma_power = spike.get_wave_powers()
-        self.label_delta_output['text'] = round(delta_power, 2)
-        read.delta_power = delta_power
+        theta_power, alpha_power, low_beta_power, high_beta_power = spike.get_wave_powers()
         self.label_theta_output['text'] = round(theta_power, 2)
         read.theta_power = theta_power
         self.label_alpha_output['text'] = round(alpha_power, 2)
@@ -1650,8 +1614,6 @@ class App(GUIStyles):
         read.low_beta_power = low_beta_power
         self.label_high_beta_output['text'] = round(high_beta_power, 2)
         read.high_beta_power = high_beta_power
-        self.label_gamma_output['text'] = round(gamma_power, 2)
-        read.gamma_power = gamma_power
 
 
     def reset_all_parameters(self):
@@ -1776,9 +1738,7 @@ class App(GUIStyles):
         self.label_firing_rate_output['text'] = ''
         self.label_burst_index_output['text'] = ''
         self.label_variation_coefficient_output['text'] = ''
-        self.label_delta_output['text'] = ''
         self.label_theta_output['text'] = ''
         self.label_alpha_output['text'] = ''
         self.label_low_beta_output['text'] = ''
         self.label_high_beta_output['text'] = ''
-        self.label_gamma_output['text'] = ''

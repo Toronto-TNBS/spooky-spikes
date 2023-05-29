@@ -526,38 +526,29 @@ class SpikeAnalysis:
 
 
     def get_wave_powers(self):
-        delta_peaks, _ = find_peaks(self.psd_autocorr[self.find_nearest(self.frequencies_autocorr, 0):self.find_nearest(self.frequencies_autocorr, 4)])
         theta_peaks, _ = find_peaks(self.psd_autocorr[self.find_nearest(self.frequencies_autocorr, 4):self.find_nearest(self.frequencies_autocorr, 8)])
         alpha_peaks, _ = find_peaks(self.psd_autocorr[self.find_nearest(self.frequencies_autocorr, 8):self.find_nearest(self.frequencies_autocorr, 12)])
         low_beta_peaks, _ = find_peaks(self.psd_autocorr[self.find_nearest(self.frequencies_autocorr, 12):self.find_nearest(self.frequencies_autocorr, 21)])
         high_beta_peaks, _ = find_peaks(self.psd_autocorr[self.find_nearest(self.frequencies_autocorr, 21):self.find_nearest(self.frequencies_autocorr, 30)])
-        gamma_peaks, _ = find_peaks(self.psd_autocorr[self.find_nearest(self.frequencies_autocorr, 30):self.find_nearest(self.frequencies_autocorr, 55)])
 
-        if (len(delta_peaks) == 0) or (len(theta_peaks) == 0) or (len(alpha_peaks) == 0) or (
-                len(low_beta_peaks) == 0) or (len(high_beta_peaks) == 0) or (len(gamma_peaks) == 0):
-            delta_freq = -100
+        if (len(theta_peaks) == 0) or (len(alpha_peaks) == 0) or (
+                len(low_beta_peaks) == 0) or (len(high_beta_peaks) == 0):
             theta_freq = -100
             alpha_freq = -100
             low_beta_freq = -100
             high_beta_freq = -100
-            gamma_freq = -100
 
-            delta_power = -100
             theta_power = -100
             alpha_power = -100
             low_beta_power = -100
             high_beta_power = -100
-            gamma_power = -100
 
         else:
             theta_peaks = theta_peaks + self.find_nearest(self.frequencies_autocorr, 4)
             alpha_peaks = alpha_peaks + self.find_nearest(self.frequencies_autocorr, 8)
             low_beta_peaks = low_beta_peaks + self.find_nearest(self.frequencies_autocorr, 12)
             high_beta_peaks = high_beta_peaks + self.find_nearest(self.frequencies_autocorr, 21)
-            gamma_peaks = gamma_peaks + self.find_nearest(self.frequencies_autocorr, 30)
 
-            delta_peak_width = peak_widths(self.psd_autocorr, delta_peaks, rel_height=1)[0][
-                self.psd_autocorr[delta_peaks].argmax()]
             theta_peak_width = peak_widths(self.psd_autocorr, theta_peaks, rel_height=1)[0][
                 self.psd_autocorr[theta_peaks].argmax()]
             alpha_peak_width = peak_widths(self.psd_autocorr, alpha_peaks, rel_height=1)[0][
@@ -566,14 +557,6 @@ class SpikeAnalysis:
                 self.psd_autocorr[low_beta_peaks].argmax()]
             high_beta_peak_width = peak_widths(self.psd_autocorr, high_beta_peaks, rel_height=1)[0][
                 self.psd_autocorr[high_beta_peaks].argmax()]
-            gamma_peak_width = peak_widths(self.psd_autocorr, gamma_peaks, rel_height=1)[0][
-                self.psd_autocorr[gamma_peaks].argmax()]
-
-            # delta_peak = self.psd_autocorr[delta_peaks[self.psd_autocorr[delta_peaks].argmax()]]
-            delta_freq = self.frequencies_autocorr[delta_peaks[self.psd_autocorr[delta_peaks].argmax()]]
-            delta_power = sum(self.psd_autocorr[
-                              self.find_nearest(self.frequencies_autocorr, delta_freq - delta_peak_width * 0.1 / 2):self.find_nearest(
-                                  self.frequencies_autocorr, delta_freq + delta_peak_width * 0.1 / 2)])
 
             # theta_peak = self.psd_autocorr[theta_peaks[self.psd_autocorr[theta_peaks].argmax()]]
             theta_freq = self.frequencies_autocorr[theta_peaks[self.psd_autocorr[theta_peaks].argmax()]]
@@ -599,10 +582,5 @@ class SpikeAnalysis:
                                                             high_beta_freq - high_beta_peak_width * 0.1 / 2):self.find_nearest(
                 self.frequencies_autocorr, high_beta_freq + high_beta_peak_width * 0.1 / 2)])
 
-            # gamma_peak = self.psd_autocorr[gamma_peaks[self.psd_autocorr[gamma_peaks].argmax()]]
-            gamma_freq = self.frequencies_autocorr[gamma_peaks[self.psd_autocorr[gamma_peaks].argmax()]]
-            gamma_power = sum(self.psd_autocorr[
-                              self.find_nearest(self.frequencies_autocorr, gamma_freq - gamma_peak_width * 0.1 / 2):self.find_nearest(
-                                  self.frequencies_autocorr, gamma_freq + gamma_peak_width * 0.1 / 2)])
 
-        return delta_power, theta_power, alpha_power, low_beta_power, high_beta_power, gamma_power
+        return theta_power, alpha_power, low_beta_power, high_beta_power
