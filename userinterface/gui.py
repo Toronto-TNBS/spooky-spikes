@@ -326,16 +326,13 @@ class App(GUIStyles):
         self.notebook.grid(column=2, row=0, rowspan=self.num_rows, sticky='nesw')
         self.tab_main = Frame(self.notebook, bg='white')
         self.tab_spikesorting = Frame(self.notebook, bg='white')
-        self.tab_psd = Frame(self.notebook, bg='white')
-        self.tab_oscillations = Frame(self.notebook, bg='white')
+        self.tab_features = Frame(self.notebook, bg='white')
         self.tab_main.grid(column=2, row=0, sticky='nesw')
         self.tab_spikesorting.grid(column=2, row=0, sticky='nesw')
-        self.tab_psd.grid(column=2, row=0, sticky='nesw')
-        self.tab_oscillations.grid(column=2, row=0, sticky='nesw')
+        self.tab_features.grid(column=2, row=0, sticky='nesw')
         self.notebook.add(self.tab_main, text='Main')
         self.notebook.add(self.tab_spikesorting, text='Spike Sorting')
-        self.notebook.add(self.tab_psd, text='PSD')
-        self.notebook.add(self.tab_oscillations, text='Oscillations')
+        self.notebook.add(self.tab_features, text='Features')
 
         # Background tab section dividers
         self.filtering_bg = Canvas(self.tab_main, bg='white', height=120)
@@ -560,31 +557,6 @@ class App(GUIStyles):
         self.dropdown_desired_cluster.grid(column=1, row=2, columnspan=1, sticky='we', padx=self.widget_align_pad,
                                            pady=self.right_header_pady)
 
-        # self.entry_desired_clusters = ttk.Entry(
-        #     self.tab_spikesorting,
-        #     justify='left',
-        #     width=20,
-        #     state='disabled',
-        #     style='unchecked.TEntry'
-        # )
-        # self.entry_desired_clusters.grid(column=1, row=3, sticky='w', padx=self.widget_align_pad)
-        #
-        # self.button_save_desired_clusters = ttk.Button(
-        #     self.tab_spikesorting,
-        #     text='Set',
-        #     style='TButton',
-        #     command=self.button_set_desired_clusters_press
-        # )
-        # self.button_save_desired_clusters.grid(column=2, row=3, sticky='w')
-        #
-        # self.label_desired_clusters = ttk.Label(
-        #     self.tab_spikesorting,
-        #     text='Desired: 0',
-        #     style='outputs.TLabel',
-        #     background=self.right_panel_bg
-        # )
-        # self.label_desired_clusters.grid(column=3, row=3, sticky='w', padx=self.widget_align_pad)
-
         self.tab_spikesorting_plot()
 
         ttk.Label(self.tab_spikesorting, background=self.right_panel_bg, width=15).grid(column=0, row=0)
@@ -592,130 +564,10 @@ class App(GUIStyles):
 
         self.plot_toolbar_spikesorting()
 
-        # self.header_desired_clusters = ttk.Label(
-        #     self.tab_spikesorting,
-        #     text='Desired Clusters:',
-        #     style='right_headers.TLabel',
-        #     background=self.right_panel_bg
-        # )
-        # self.header_desired_clusters.grid(column=1, row=2, sticky='w', padx=self.header_align_pad,
-        #                                   pady=self.right_header_pady)
-
-
-        self.header_psd_fFrom = ttk.Label(
-            self.tab_psd,
-            text='fFrom:',
-            style='right_headers.TLabel',
-            background=self.right_panel_bg
-        )
-        self.header_psd_fFrom.grid(column=1, row=0, sticky='w', padx=self.header_align_pad, pady=self.right_header_pady)
-
-        self.entry_psd_fFrom = ttk.Entry(
-            self.tab_psd,
-            justify='left',
-            width=20,
-            style='unchecked.TEntry',
-            state='disabled'
-        )
-        self.entry_psd_fFrom.grid(column=1, row=1, sticky='w', padx=self.widget_align_pad)
-
-        self.header_psd_fTo = ttk.Label(
-            self.tab_psd,
-            text='fTo:',
-            style='right_headers.TLabel',
-            background=self.right_panel_bg
-        )
-        self.header_psd_fTo.grid(column=2, row=0, sticky='w', pady=self.right_header_pady)
-
-        self.entry_psd_fTo = ttk.Entry(
-            self.tab_psd,
-            justify='left',
-            width=20,
-            style='unchecked.TEntry',
-            state='disabled'
-        )
-        self.entry_psd_fTo.grid(column=2, row=1, sticky='w')
-
-        self.button_save_psd_fFrom_fTo = ttk.Button(
-            self.tab_psd,
-            text='Set',
-            command=self.button_set_psd_fFromfTo_press,
-            style='TButton'
-        )
-        self.button_save_psd_fFrom_fTo.grid(column=3, row=1, sticky='w', padx=self.widget_align_pad)
-
-        self.label_psd_fFrom_fTo = ttk.Label(
-            self.tab_psd,
-            text='fFrom: 0 s\nfTo: 0 s',
-            style='outputs.TLabel',
-            background=self.right_panel_bg
-        )
-        self.label_psd_fFrom_fTo.grid(column=4, row=1, sticky='w')
-
-        ttk.Label(self.tab_psd, background=self.right_panel_bg, width=15).grid(column=0, row=0)
-        ttk.Label(self.tab_psd, background=self.right_panel_bg, width=50).grid(column=4, row=0)
-
-        self.tab_psd_plot()
-        self.plot_toolbar_psd()
-
-
-        # self.header_lag_time = ttk.Label(
-        #     self.tab_oscillations,
-        #     text='Lag Time:',
-        #     style='right_headers.TLabel',
-        #     background=self.right_panel_bg
-        # )
-        # self.header_lag_time.grid(column=1, row=0, sticky='w', padx=self.header_align_pad, pady=self.right_header_pady)
-        #
-        # self.entry_lag_time = ttk.Entry(
-        #     self.tab_oscillations,
-        #     justify='left',
-        #     width=20,
-        #     style='unchecked.TEntry',
-        #     state='disabled'
-        # )
-        # self.entry_lag_time.grid(column=1, row=1, sticky='w', padx=self.widget_align_pad)
-        #
-        # self.header_time_interval = ttk.Label(
-        #     self.tab_oscillations,
-        #     text='Time Interval:',
-        #     style='right_headers.TLabel',
-        #     background=self.right_panel_bg
-        # )
-        # self.header_time_interval.grid(column=2, row=0, sticky='w',
-        #                                pady=self.right_header_pady)
-        #
-        # self.entry_time_interval = ttk.Entry(
-        #     self.tab_oscillations,
-        #     justify='left',
-        #     width=20,
-        #     style='unchecked.TEntry',
-        #     state='disabled'
-        # )
-        # self.entry_time_interval.grid(column=2, row=1, sticky='w')
-        #
-        # self.button_save_lag_time_interval = ttk.Button(
-        #     self.tab_oscillations,
-        #     text='Set',
-        #     command=self.button_set_lag_time_interval_press,
-        #     style='TButton'
-        # )
-        # self.button_save_lag_time_interval.grid(column=3, row=1, sticky='w', padx=self.widget_align_pad)
-        #
-        # self.label_lag_time_interval = ttk.Label(
-        #     self.tab_oscillations,
-        #     text='Lag: 0.5 s\nInterval: 0.01 s',
-        #     style='outputs.TLabel',
-        #     background=self.right_panel_bg
-        # )
-        # self.label_lag_time_interval.grid(column=4, row=1, sticky='w')
-
-        # ttk.Label(self.tab_oscillations, background=self.right_panel_bg, width=15).grid(column=0, row=0)
-        # ttk.Label(self.tab_oscillations, background=self.right_panel_bg, width=50).grid(column=4, row=0)
-
-        self.tab_oscillations_plot()
-        self.plot_toolbar_oscillations()
-
+        # self.tab_psd_plot()
+        # self.plot_toolbar_psd()
+        # self.tab_oscillations_plot()
+        # self.plot_toolbar_oscillations()
 
 
 
@@ -811,20 +663,11 @@ class App(GUIStyles):
             frequencies, psd = spike.get_psd(magnitudes=spike.main_magnitudes, fs=spike.main_fs)
             spike.psd_frequencies = frequencies
             spike.psd_power = psd
-            self.entry_psd_fFrom['state'] = 'normal'
-            self.entry_psd_fFrom['style'] = 'TEntry'
-            self.entry_psd_fFrom.delete(0, END)
-            self.entry_psd_fFrom.insert(0, '0')
-            self.entry_psd_fTo['state'] = 'normal'
-            self.entry_psd_fTo['style'] = 'TEntry'
-            self.entry_psd_fTo.delete(0, END)
-            self.entry_psd_fTo.insert(0, '100')
-            self.label_psd_fFrom_fTo['text'] = 'fFrom: 0 Hz\nfTo: 100 Hz'
 
-            spike.psd_plot_xlim = [0, 100]
-            self.delete_plot(self.plot_canvas_psd)
-            self.tab_psd_plot()
-            self.plot_toolbar_psd()
+            # spike.psd_plot_xlim = [0, 100]
+            # self.delete_plot(self.plot_canvas_psd)
+            # self.tab_psd_plot()
+            # self.plot_toolbar_psd()
 
 
     def dropdown_channel_choice(self):
@@ -856,11 +699,6 @@ class App(GUIStyles):
             frequencies, psd = spike.get_psd(magnitudes=spike.main_magnitudes, fs=spike.main_fs)
             spike.psd_frequencies = frequencies
             spike.psd_power = psd
-
-            spike.psd_plot_xlim = [0, 100]
-            self.delete_plot(self.plot_canvas_psd)
-            self.tab_psd_plot()
-            self.plot_toolbar_psd()
 
 
     def check_filtering_choice(self):
@@ -1452,15 +1290,6 @@ class App(GUIStyles):
             i.configure(background='white', bd=0)
 
 
-    def button_set_psd_fFromfTo_press(self):
-        self.label_psd_fFrom_fTo['text'] = f'fFrom: {self.entry_psd_fFrom.get()} Hz\n' \
-                                           f'fTo: {self.entry_psd_fTo.get()} Hz'
-        spike.psd_plot_xlim = [int(self.entry_psd_fFrom.get()), int(self.entry_psd_fTo.get())]
-        self.delete_plot(self.plot_canvas_psd)
-        self.tab_psd_plot()
-        self.plot_toolbar_psd()
-
-
     def tab_psd_plot(self):
         fig = spike.psd_plot()
         self.plot_canvas_psd = FigureCanvasTkAgg(fig, master=self.tab_psd)
@@ -1476,23 +1305,6 @@ class App(GUIStyles):
         self.toolbar._message_label.configure(background='white')
         for i in self.toolbar.winfo_children():
             i.configure(background='white', bd=0)
-
-
-    # def button_set_lag_time_interval_press(self):
-    #     self.label_lag_time_interval['text'] = f'Lag: {self.entry_lag_time.get()} s\n' \
-    #                                            f'Interval: {self.entry_time_interval.get()} s'
-    #     if spike.main_threshold_set:
-    #         spike.lag_time = float(self.entry_lag_time.get())
-    #         read.lag_time = spike.lag_time
-    #         spike.time_interval = float(self.entry_time_interval.get())
-    #         read.time_interval = spike.time_interval
-    #
-    #         self.update_oscillations_parameters()
-    #         self.delete_plot(self.plot_canvas_oscillations)
-    #         self.tab_oscillations_plot()
-    #         self.plot_toolbar_oscillations()
-    #     else:
-    #         print('Error: no threshold has been set. Oscillation analysis unavailable.')
 
 
     def tab_oscillations_plot(self):
