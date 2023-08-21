@@ -112,186 +112,12 @@ class App(GUIStyles):
         )
         self.check_invertsegment.grid(column=0, row=7, sticky='w', padx=self.widget_align_pad)
 
-        self.header_quality_metrics = ttk.Label(
-            text='Quality Metrics:',
-            style='headers.TLabel',
-            background=self.left_panel_bg
-        )
-        self.header_quality_metrics.grid(column=0, row=8, sticky='w', padx=self.header_align_pad)
-
-        self.label_snr = ttk.Label(
-            text='Signal to noise ratio:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_snr.grid(column=0, row=9, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_snr_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_snr_output.grid(column=1, row=9, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_interspike = ttk.Label(
-            text='Percent ISI violations:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_interspike.grid(column=0, row=10, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_interspike_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_interspike_output.grid(column=1, row=10, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_silhouette = ttk.Label(
-            text='Silhouette Score:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_silhouette.grid(column=0, row=11, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_silhouette_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_silhouette_output.grid(column=1, row=11, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.header_features = ttk.Label(
-            text='Features:',
-            style='headers.TLabel',
-            background=self.left_panel_bg
-        )
-        self.header_features.grid(column=0, row=12, sticky='w', padx=self.header_align_pad)
-
-        self.label_firing_rate = ttk.Label(
-            text='Firing rate (Hz):',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_firing_rate.grid(column=0, row=13, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_firing_rate_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_firing_rate_output.grid(column=1, row=13, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_burst_index = ttk.Label(
-            text='Burst index:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_burst_index.grid(column=0, row=14, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_burst_index_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_burst_index_output.grid(column=1, row=14, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_variation_coefficient = ttk.Label(
-            text='Coefficient of variation:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_variation_coefficient.grid(column=0, row=15, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_variation_coefficient_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_variation_coefficient_output.grid(column=1, row=15, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_theta = ttk.Label(
-            text='Theta oscillatory power:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_theta.grid(column=0, row=17, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_theta_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_theta_output.grid(column=1, row=17, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_alpha = ttk.Label(
-            text='Alpha oscillatory power:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_alpha.grid(column=0, row=18, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_alpha_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_alpha_output.grid(column=1, row=18, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_low_beta = ttk.Label(
-            text='Low beta oscillatory power:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_low_beta.grid(column=0, row=19, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_low_beta_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_low_beta_output.grid(column=1, row=19, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_high_beta = ttk.Label(
-            text='High beta oscillatory power:',
-            style='outputs.TLabel',
-            background=self.left_panel_bg,
-            width=self.label_output_name_width
-        )
-        self.label_high_beta.grid(column=0, row=20, sticky='w', padx=self.widget_align_pad, pady=self.label_output_pady)
-
-        self.label_high_beta_output = ttk.Label(
-            text='',
-            style='outputs.TLabel',
-            background='white',
-            width=self.label_output_width
-        )
-        self.label_high_beta_output.grid(column=1, row=20, sticky='we', padx=self.widget_align_pad, pady=self.label_output_pady)
-
         self.header_export = ttk.Label(
             text='Export:',
             style='headers.TLabel',
             background=self.left_panel_bg
         )
-        self.header_export.grid(column=0, row=22, sticky='w', padx=self.header_align_pad)
+        self.header_export.grid(column=0, row=8, sticky='w', padx=self.header_align_pad)
 
         self.dropdown_save_menu = Menu(tearoff=False)
         self.dropdown_save_menu.add_command(
@@ -316,7 +142,7 @@ class App(GUIStyles):
             style='TMenubutton',
             width=40
         )
-        self.dropdown_save.grid(column=0, row=23, columnspan=2, sticky='we', padx=self.widget_align_pad, pady=5)
+        self.dropdown_save.grid(column=0, row=9, columnspan=2, sticky='we', padx=self.widget_align_pad, pady=5)
 
         self.num_rows = self.grid_size()[1]
         self.num_columns = self.grid_size()[0]
@@ -519,31 +345,6 @@ class App(GUIStyles):
         )
         self.header_number_clusters.grid(column=1, row=0, sticky='w', padx=self.header_align_pad, pady=self.right_header_pady)
 
-        # self.entry_number_clusters = ttk.Entry(
-        #     self.tab_spikesorting,
-        #     justify='left',
-        #     width=20,
-        #     state='disabled',
-        #     style='unchecked.TEntry'
-        # )
-        # self.entry_number_clusters.grid(column=1, row=1, sticky='w', padx=self.widget_align_pad)
-        #
-        # self.button_save_number_clusters = ttk.Button(
-        #     self.tab_spikesorting,
-        #     text='Set',
-        #     command=self.button_set_number_clusters_press,
-        #     style='TButton'
-        # )
-        # self.button_save_number_clusters.grid(column=2, row=1, sticky='w')
-        #
-        # self.label_number_clusters = ttk.Label(
-        #     self.tab_spikesorting,
-        #     text='Clusters: 0',
-        #     style='outputs.TLabel',
-        #     background=self.right_panel_bg
-        # )
-        # self.label_number_clusters.grid(column=3, row=1, sticky='w', padx=self.widget_align_pad)
-
         self.dropdown_selected_cluster = StringVar()
         self.desired_clusters_menu = None
         self.dropdown_desired_cluster = ttk.Menubutton(
@@ -563,6 +364,454 @@ class App(GUIStyles):
         ttk.Label(self.tab_spikesorting, background=self.right_panel_bg, width=100).grid(column=4, row=0)
 
         self.plot_toolbar_spikesorting()
+
+        # --- Features Tab --- #
+
+        self.label_patterned = ttk.Label(
+            master=self.tab_features,
+            text='Patterned',
+            style='right_headers.TLabel',
+            background='white'
+        )
+        self.label_patterned.grid(column=0, row=0, sticky='w', padx=self.header_align_pad, pady=self.features_headers_pady)
+
+        self.frame_patterned = Frame(self.tab_features, bg=self.left_panel_bg)
+        self.frame_patterned.grid(column=0, row=1, padx=self.frame_padx)
+
+        self.label_firing_rate = ttk.Label(
+            master=self.frame_patterned,
+            text='Firing rate (Hz):',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+        )
+        self.label_firing_rate.grid(column=0, row=0, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_firing_rate_output = ttk.Label(
+            master=self.frame_patterned,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_firing_rate_output.grid(column=1, row=0, sticky='w', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_burst_index = ttk.Label(
+            master=self.frame_patterned,
+            text='Burst index:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+        )
+        self.label_burst_index.grid(column=0, row=1, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_burst_index_output = ttk.Label(
+            master=self.frame_patterned,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_burst_index_output.grid(column=1, row=1, sticky='w', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_variation_coefficient = ttk.Label(
+            master=self.frame_patterned,
+            text='Coefficient of variation:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+        )
+        self.label_variation_coefficient.grid(column=0, row=2, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_variation_coefficient_output = ttk.Label(
+            master=self.frame_patterned,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_variation_coefficient_output.grid(column=1, row=2, sticky='w', padx=self.header_align_pad, pady=self.label_output_pady)
+
+
+        self.label_quality = ttk.Label(
+            master=self.tab_features,
+            text='Quality Metrics',
+            style='right_headers.TLabel',
+            background='white'
+        )
+        self.label_quality.grid(column=1, row=0, sticky='w', pady=self.features_headers_pady)
+
+        self.frame_quality = Frame(self.tab_features, bg=self.left_panel_bg)
+        self.frame_quality.grid(column=1, row=1)
+
+        self.label_snr = ttk.Label(
+            master=self.frame_quality,
+            text='Signal to noise ratio:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+        )
+        self.label_snr.grid(column=0, row=0, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_snr_output = ttk.Label(
+            master=self.frame_quality,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_snr_output.grid(column=1, row=0, sticky='w', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_interspike = ttk.Label(
+            master=self.frame_quality,
+            text='Percent ISI violations:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+        )
+        self.label_interspike.grid(column=0, row=1, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_interspike_output = ttk.Label(
+            master=self.frame_quality,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_interspike_output.grid(column=1, row=1, sticky='w', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_silhouette = ttk.Label(
+            master=self.frame_quality,
+            text='Silhouette Score:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+        )
+        self.label_silhouette.grid(column=0, row=2, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_silhouette_output = ttk.Label(
+            master=self.frame_quality,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_silhouette_output.grid(column=1, row=2, sticky='w', padx=self.header_align_pad, pady=self.label_output_pady)
+
+
+        self.frame_patterned_aux = Frame(self.tab_features, bg=self.left_panel_bg)
+        self.frame_patterned_aux.grid(column=2, row=1, sticky='wens', padx=self.frame_padx)
+
+        self.label_plot_isi = ttk.Label(
+            master=self.frame_patterned_aux,
+            text='ISI Plot',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_plot_isi.grid(column=0, row=0, sticky='we', pady=self.right_header_pady)
+
+        self.button_plot_isi = ttk.Button(
+            master=self.frame_patterned_aux,
+            text='Generate',
+            style='TButton',
+            command=self.button_plot_isi_press
+        )
+        self.button_plot_isi.grid(column=0, row=1, sticky='ew', padx=self.widget_align_pad, pady=self.right_header_pady)
+
+
+        self.label_oscillations = ttk.Label(
+            master=self.tab_features,
+            text='Oscillations',
+            style='right_headers.TLabel',
+            background='white'
+        )
+        self.label_oscillations.grid(column=0, row=2, sticky='w', padx=self.header_align_pad, pady=self.features_headers_pady)
+
+        self.frame_oscillations = Frame(self.tab_features, bg=self.left_panel_bg)
+        self.frame_oscillations.grid(column=0, row=3, columnspan=2, sticky='nswe', padx=self.frame_padx)
+
+        self.label_oscillations_power = ttk.Label(
+            master=self.frame_oscillations,
+            text='Power:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg
+        )
+        self.label_oscillations_power.grid(column=0, row=1, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_oscillations_burst = ttk.Label(
+            master=self.frame_oscillations,
+            text='Burst Duration:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg
+        )
+        self.label_oscillations_burst.grid(column=0, row=2, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.label_theta = ttk.Label(
+            master=self.frame_oscillations,
+            text='Theta',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_theta.grid(column=1, row=0, sticky='we', pady=self.label_output_pady)
+
+        self.label_theta_power_output = ttk.Label(
+            master=self.frame_oscillations,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_theta_power_output.grid(column=1, row=1, sticky='we')
+
+        self.label_theta_burst_output = ttk.Label(
+            master=self.frame_oscillations,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_theta_burst_output.grid(column=1, row=2, sticky='we', pady=self.label_output_pady)
+
+        self.label_alpha = ttk.Label(
+            master=self.frame_oscillations,
+            text='Alpha',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_alpha.grid(column=2, row=0, sticky='we', padx=self.header_align_pad,
+                              pady=self.label_output_pady)
+
+        self.label_alpha_power_output = ttk.Label(
+            master=self.frame_oscillations,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_alpha_power_output.grid(column=2, row=1, sticky='we', padx=self.header_align_pad)
+
+        self.label_alpha_burst_output = ttk.Label(
+            master=self.frame_oscillations,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_alpha_burst_output.grid(column=2, row=2, sticky='we', padx=self.header_align_pad,
+                                           pady=self.label_output_pady)
+
+        self.label_lowbeta = ttk.Label(
+            master=self.frame_oscillations,
+            text='Low-beta',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_lowbeta.grid(column=3, row=0, sticky='we', pady=self.label_output_pady)
+
+        self.label_lowbeta_power_output = ttk.Label(
+            master=self.frame_oscillations,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_lowbeta_power_output.grid(column=3, row=1, sticky='we')
+
+        self.label_lowbeta_burst_output = ttk.Label(
+            master=self.frame_oscillations,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_lowbeta_burst_output.grid(column=3, row=2, sticky='we', pady=self.label_output_pady)
+
+        self.label_highbeta = ttk.Label(
+            master=self.frame_oscillations,
+            text='High-beta',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_highbeta.grid(column=4, row=0, sticky='we', padx=self.header_align_pad,
+                                pady=self.label_output_pady)
+
+        self.label_highbeta_power_output = ttk.Label(
+            master=self.frame_oscillations,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_highbeta_power_output.grid(column=4, row=1, sticky='we', padx=self.header_align_pad)
+
+        self.label_highbeta_burst_output = ttk.Label(
+            master=self.frame_oscillations,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_highbeta_burst_output.grid(column=4, row=2, sticky='we', padx=self.header_align_pad,
+                                             pady=self.label_output_pady)
+
+
+        self.frame_oscillations_aux = Frame(self.tab_features, bg=self.left_panel_bg)
+        self.frame_oscillations_aux.grid(column=2, row=3, sticky='nswe')
+
+        self.label_oscillations_method = ttk.Label(
+            master=self.frame_oscillations_aux,
+            text='Oscillations Method:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_oscillations_method.grid(column=0, row=0, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
+
+        self.oscillations_method_menu = Menu(tearoff=False)
+        self.oscillations_method_menu.add_command(
+            label='Method 1',
+            # command=self.dropdown_save_properties,
+            font=self.menu_item_font
+        )
+        self.oscillations_method_menu.add_command(
+            label='Method 2',
+            # command=self.some_function,
+            font=self.menu_item_font
+        )
+        self.dropdown_oscillations_method = ttk.Menubutton(
+            master=self.frame_oscillations_aux,
+            direction='below',
+            text='Select Method',
+            menu=self.oscillations_method_menu,
+            style='TMenubutton',
+        )
+        self.dropdown_oscillations_method.grid(column=0, row=1, sticky='we', padx=self.header_align_pad)
+
+        self.button_plot_oscillations = ttk.Button(
+            master=self.frame_oscillations_aux,
+            text='Generate Plot',
+            style='TButton',
+            command=self.button_plot_oscillations_press
+        )
+        self.button_plot_oscillations.grid(column=0, row=2, sticky='ew', padx=self.widget_align_pad, pady=self.label_output_pady)
+
+
+        self.label_lfp = ttk.Label(
+            master=self.tab_features,
+            text='LFP Power',
+            style='right_headers.TLabel',
+            background='white'
+        )
+        self.label_lfp.grid(column=0, row=4, sticky='w', padx=self.header_align_pad,
+                                     pady=self.features_headers_pady)
+
+        self.frame_lfp = Frame(self.tab_features, bg=self.left_panel_bg)
+        self.frame_lfp.grid(column=0, row=5, columnspan=2, sticky='nesw', padx=self.frame_padx)
+
+        self.label_lfp_power = ttk.Label(
+            master=self.frame_lfp,
+            text='Power:',
+            style='outputs.TLabel',
+            background=self.left_panel_bg
+        )
+        self.label_lfp_power.grid(column=0, row=1, sticky='we', padx=self.header_align_pad,
+                                           pady=self.label_output_pady)
+
+        self.label_theta_lfp = ttk.Label(
+            master=self.frame_lfp,
+            text='Theta',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_theta_lfp.grid(column=1, row=0, sticky='we', pady=self.label_output_pady)
+
+        self.label_theta_lfp_output = ttk.Label(
+            master=self.frame_lfp,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_theta_lfp_output.grid(column=1, row=1, sticky='we')
+
+
+        self.label_alpha_lfp = ttk.Label(
+            master=self.frame_lfp,
+            text='Alpha',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_alpha_lfp.grid(column=2, row=0, sticky='we', padx=self.header_align_pad,
+                              pady=self.label_output_pady)
+
+        self.label_alpha_lfp_output = ttk.Label(
+            master=self.frame_lfp,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_alpha_lfp_output.grid(column=2, row=1, sticky='we', padx=self.header_align_pad)
+
+        self.label_lowbeta_lfp = ttk.Label(
+            master=self.frame_lfp,
+            text='Low-beta',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_lowbeta_lfp.grid(column=3, row=0, sticky='we', pady=self.label_output_pady)
+
+        self.label_lowbeta_lfp_output = ttk.Label(
+            master=self.frame_lfp,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_lowbeta_lfp_output.grid(column=3, row=1, sticky='we')
+
+        self.label_highbeta_lfp = ttk.Label(
+            master=self.frame_lfp,
+            text='High-beta',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_highbeta_lfp.grid(column=4, row=0, sticky='we', padx=self.header_align_pad,
+                                 pady=self.label_output_pady)
+
+        self.label_highbeta_lfp_output = ttk.Label(
+            master=self.frame_lfp,
+            text='',
+            style='outputs.TLabel',
+            background='white',
+            width=self.label_output_width
+        )
+        self.label_highbeta_lfp_output.grid(column=4, row=1, sticky='we', padx=self.header_align_pad)
+
+
+        self.frame_lfp_aux = Frame(self.tab_features, bg=self.left_panel_bg)
+        self.frame_lfp_aux.grid(column=2, row=5, sticky='nesw')
+
+        self.label_plot_lfp = ttk.Label(
+            master=self.frame_lfp_aux,
+            text='LFP Plot',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_plot_lfp.grid(column=0, row=0, sticky='we', pady=self.right_header_pady)
+
+        self.button_plot_lfp = ttk.Button(
+            master=self.frame_lfp_aux,
+            text='Generate',
+            style='TButton',
+            command=self.button_plot_lfp_press
+        )
+        self.button_plot_lfp.grid(column=0, row=1, sticky='ew', padx=self.widget_align_pad, pady=self.right_header_pady)
+
 
         # self.tab_psd_plot()
         # self.plot_toolbar_psd()
@@ -1112,10 +1361,10 @@ class App(GUIStyles):
             self.label_firing_rate_output['text'] = ''
             self.label_burst_index_output['text'] = ''
             self.label_variation_coefficient_output['text'] = ''
-            self.label_theta_output['text'] = ''
-            self.label_alpha_output['text'] = ''
-            self.label_low_beta_output['text'] = ''
-            self.label_high_beta_output['text'] = ''
+            self.label_theta_power_output['text'] = ''
+            self.label_alpha_power_output['text'] = ''
+            self.label_lowbeta_power_output['text'] = ''
+            self.label_highbeta_power_output['text'] = ''
 
             read.threshold = None
             read.threshold_factor = None
@@ -1418,14 +1667,26 @@ class App(GUIStyles):
             self.label_silhouette_output['text'] = round(silhouette, 2)
 
         theta_power, alpha_power, low_beta_power, high_beta_power = spike.get_wave_powers()
-        self.label_theta_output['text'] = round(theta_power, 2)
+        self.label_theta_power_output['text'] = round(theta_power, 2)
         read.theta_power = theta_power
-        self.label_alpha_output['text'] = round(alpha_power, 2)
+        self.label_alpha_power_output['text'] = round(alpha_power, 2)
         read.alpha_power = alpha_power
-        self.label_low_beta_output['text'] = round(low_beta_power, 2)
+        self.label_lowbeta_power_output['text'] = round(low_beta_power, 2)
         read.low_beta_power = low_beta_power
-        self.label_high_beta_output['text'] = round(high_beta_power, 2)
+        self.label_highbeta_power_output['text'] = round(high_beta_power, 2)
         read.high_beta_power = high_beta_power
+
+
+    def button_plot_isi_press(self):
+        pass
+
+
+    def button_plot_oscillations_press(self):
+        pass
+
+
+    def button_plot_lfp_press(self):
+        pass
 
 
     def reset_all_parameters(self):
@@ -1550,7 +1811,7 @@ class App(GUIStyles):
         self.label_firing_rate_output['text'] = ''
         self.label_burst_index_output['text'] = ''
         self.label_variation_coefficient_output['text'] = ''
-        self.label_theta_output['text'] = ''
-        self.label_alpha_output['text'] = ''
-        self.label_low_beta_output['text'] = ''
-        self.label_high_beta_output['text'] = ''
+        self.label_theta_power_output['text'] = ''
+        self.label_alpha_power_output['text'] = ''
+        self.label_lowbeta_power_output['text'] = ''
+        self.label_highbeta_power_output['text'] = ''

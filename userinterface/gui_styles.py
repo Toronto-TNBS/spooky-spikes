@@ -17,8 +17,11 @@ class GUIStyles(Tk):
         self.widget_align_pad = 30
         self.widget_thick_pad = 7
         self.label_output_width = 7
-        self.label_output_name_width = 23
-        self.label_output_pady = 1
+        self.label_output_name_width = 20
+        self.label_output_pady = 10
+        self.frame_padx = 20
+        self.frame_pady= 0
+        self.features_headers_pady = 20
         self.menu_item_font = ('Arial', 14, 'normal')
 
         self.style.configure(
