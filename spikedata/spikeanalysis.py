@@ -73,6 +73,8 @@ class SpikeAnalysis:
         self.coloured_binned_time = []
         self.coloured_autocorr = []
 
+        self.spiketrain_indices = []
+
 
     def main_plot(self):
         fig, ax = plt.subplots(ncols=1, nrows=2, gridspec_kw={'height_ratios': [1, 8]}, figsize=(8, 5.15), sharex=True)

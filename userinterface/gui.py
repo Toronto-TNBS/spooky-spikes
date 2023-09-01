@@ -10,9 +10,11 @@ import numpy as np
 import sys
 import base64
 from images import base64_image
+from spikedata.AnalyzeMER import AnalyzeMER
 
 read = ReadSpike()
 spike = SpikeAnalysis()
+mer = AnalyzeMER()
 
 
 class App(GUIStyles):
@@ -1365,6 +1367,10 @@ class App(GUIStyles):
             self.label_alpha_power_output['text'] = ''
             self.label_lowbeta_power_output['text'] = ''
             self.label_highbeta_power_output['text'] = ''
+            self.label_theta_burst_output['text'] = ''
+            self.label_alpha_burst_output['text'] = ''
+            self.label_lowbeta_burst_output['text'] = ''
+            self.label_highbeta_burst_output['text'] = ''
 
             read.threshold = None
             read.threshold_factor = None
@@ -1385,6 +1391,7 @@ class App(GUIStyles):
             )
             spike.main_event_peak_times = events[0]
             spike.main_event_peak_mags = events[1]
+            spike.spiketrain_indices = events[2]    # Peak indices.
 
             # self.entry_lag_time['state'] = 'normal'
             # self.entry_lag_time['style'] = 'TEntry'
@@ -1577,6 +1584,8 @@ class App(GUIStyles):
         events = spike.get_event_peaks(magnitudes=spike.main_magnitudes,
                                        times=spike.main_times,
                                        threshold=spike.main_threshold)
+        spike.spiketrain_indices = events[2]
+
         events, spikes = spike.get_spike_windows(
             magnitudes=spike.main_magnitudes,
             event_indices=events[2],
@@ -1613,6 +1622,8 @@ class App(GUIStyles):
         events = spike.get_event_peaks(magnitudes=spike.main_magnitudes,
                                        times=spike.main_times,
                                        threshold=spike.main_threshold)
+        spike.spiketrain_indices = events[2]
+
         spike.frequencies_autocorr, spike.psd_autocorr, spike.binned_time, spike.autocorr = spike.get_spike_oscillations(
             magnitudes=spike.main_magnitudes,
             event_indices=events[2],
@@ -1646,19 +1657,63 @@ class App(GUIStyles):
 
 
     def update_properties(self):
-        snr = spike.get_snr()
-        read.snr = snr
-        self.label_snr_output['text'] = round(snr, 2)
+        firing_rate = mer.get_FR(spike.spiketrain_indices)
+        burst_index = mer.get_BI(spike.spiketrain_indices)
+        cov = mer.get_CV(spike.spiketrain_indices)
+        # see if data must be filtered for SNR calc.
+        if not read.filtering:
+            snr = mer.get_snr(spike.main_magnitudes, spike.main_fs, spike.spiketrain_indices, spike.main_times)
+            read.snr = snr
+            self.label_snr_output['text'] = round(snr, 2)
+        # --- Spike train power
+        theta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 4, 8, 10e-3, 500e-3)
+        alpha_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 8, 12, 10e-3, 500e-3)
+        low_beta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 12, 21, 10e-3, 500e-3)
+        high_beta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 21, 30, 10e-3, 500e-3)
+
+        # --- Burst duration
+        theta_wave, theta_time_wave, theta_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices, 4, 8)
+        alpha_wave, alpha_time_wave, alpha_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices, 8, 12)
+        low_beta_wave, low_beta_time_wave, low_beta_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices,
+                                                                                                     12, 21)
+        high_beta_wave, high_beta_time_wave, high_beta_wave_power = mer.waveform_spiketrain_oscillation(
+            spike.spiketrain_indices, 21, 30)
+
+        spiketrain_burst_threshold = mer.burst_threshold(spike.spiketrain_indices, data_type='spiketrain')
+
+        theta_wave_envelope = mer.get_waveform_envelope(theta_wave)
+        alpha_wave_envelope = mer.get_waveform_envelope(alpha_wave)
+        low_beta_wave_envelope = mer.get_waveform_envelope(low_beta_wave)
+        high_beta_wave_envelope = mer.get_waveform_envelope(high_beta_wave)
+
+        theta_spiketrain_mean_burst_duration = \
+        mer.burst_features(theta_time_wave, theta_wave_envelope, spiketrain_burst_threshold)[1]
+        alpha_spiketrain_mean_burst_duration = \
+        mer.burst_features(alpha_time_wave, alpha_wave_envelope, spiketrain_burst_threshold)[1]
+        low_beta_spiketrain_mean_burst_duration = \
+        mer.burst_features(low_beta_time_wave, low_beta_wave_envelope, spiketrain_burst_threshold)[1]
+        high_beta_spiketrain_mean_burst_duration = \
+        mer.burst_features(high_beta_time_wave, high_beta_wave_envelope, spiketrain_burst_threshold)[1]
+        # --- Burst duration (END)
+        # --- LFP power
+        fs_lfp = 250  # ????
+        raw_data_lfp = mer.get_LFP_data(spike.main_magnitudes, spike.main_fs, fs_lfp)
+        raw_data_lfp = (raw_data_lfp - np.mean(raw_data_lfp)) / np.std(raw_data_lfp)
+        theta_lfp_wave, theta_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 4, 8)
+        alpha_lfp_wave, alpha_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 8, 12)
+        low_beta_lfp_wave, low_beta_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 12, 21)
+        high_beta_lfp_wave, high_beta_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 21, 30)
+
         percent_isi_violations = spike.get_percent_isi_violations()
         read.percent_isi_violations = percent_isi_violations
         self.label_interspike_output['text'] = round(percent_isi_violations, 2)
-        firing_rate = spike.get_firing_rate()
+        # firing_rate = spike.get_firing_rate()
         read.firing_rate = firing_rate
         self.label_firing_rate_output['text'] = round(firing_rate, 2)
-        burst_index = spike.get_burst_index()
+        # burst_index = spike.get_burst_index()
         read.burst_index = burst_index
         self.label_burst_index_output['text'] = round(burst_index, 2)
-        cov = spike.get_variation_coefficient()
+        # cov = spike.get_variation_coefficient()
         read.cov = cov
         self.label_variation_coefficient_output['text'] = round(cov, 2)
         if spike.spikesorting_plot_disp:
@@ -1666,15 +1721,24 @@ class App(GUIStyles):
             read.silhouette = silhouette
             self.label_silhouette_output['text'] = round(silhouette, 2)
 
-        theta_power, alpha_power, low_beta_power, high_beta_power = spike.get_wave_powers()
-        self.label_theta_power_output['text'] = round(theta_power, 2)
-        read.theta_power = theta_power
-        self.label_alpha_power_output['text'] = round(alpha_power, 2)
-        read.alpha_power = alpha_power
-        self.label_lowbeta_power_output['text'] = round(low_beta_power, 2)
-        read.low_beta_power = low_beta_power
-        self.label_highbeta_power_output['text'] = round(high_beta_power, 2)
-        read.high_beta_power = high_beta_power
+        # theta_power, alpha_power, low_beta_power, high_beta_power = spike.get_wave_powers()
+        self.label_theta_power_output['text'] = round(theta_spike_power, 2)
+        self.label_theta_burst_output['text'] = round(theta_spiketrain_mean_burst_duration, 2)
+        read.theta_power = theta_spike_power
+        self.label_alpha_power_output['text'] = round(alpha_spike_power, 2)
+        self.label_alpha_burst_output['text'] = round(alpha_spiketrain_mean_burst_duration, 2)
+        read.alpha_power = alpha_spike_power
+        self.label_lowbeta_power_output['text'] = round(low_beta_spike_power, 2)
+        self.label_lowbeta_burst_output['text'] = round(low_beta_spiketrain_mean_burst_duration, 2)
+        read.low_beta_power = low_beta_spike_power
+        self.label_highbeta_power_output['text'] = round(high_beta_spike_power, 2)
+        self.label_highbeta_burst_output['text'] = round(high_beta_spiketrain_mean_burst_duration, 2)
+        read.high_beta_power = high_beta_spike_power
+
+        self.label_theta_lfp_output['text'] = round(theta_lfp_power, 2)
+        self.label_alpha_lfp_output['text'] = round(alpha_lfp_power, 2)
+        self.label_lowbeta_lfp_output['text'] = round(low_beta_lfp_power, 2)
+        self.label_highbeta_lfp_output['text'] = round(high_beta_lfp_power, 2)
 
 
     def button_plot_isi_press(self):
@@ -1815,3 +1879,11 @@ class App(GUIStyles):
         self.label_alpha_power_output['text'] = ''
         self.label_lowbeta_power_output['text'] = ''
         self.label_highbeta_power_output['text'] = ''
+        self.label_theta_burst_output['text'] = ''
+        self.label_alpha_burst_output['text'] = ''
+        self.label_lowbeta_burst_output['text'] = ''
+        self.label_highbeta_burst_output['text'] = ''
+        self.label_theta_lfp_output['text'] = ''
+        self.label_alpha_lfp_output['text'] = ''
+        self.label_lowbeta_lfp_output['text'] = ''
+        self.label_highbeta_lfp_output['text'] = ''
