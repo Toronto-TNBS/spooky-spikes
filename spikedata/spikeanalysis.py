@@ -586,3 +586,27 @@ class SpikeAnalysis:
 
 
         return theta_power, alpha_power, low_beta_power, high_beta_power
+
+
+    def isi_plot(self):
+        fig, ax = plt.subplots(1, 1)
+        # Ensure that spikes are from the target neuron, probably by requiring spike sorting before plotting.
+        spike_times = self.main_times[np.array(list(self.spiketrain_indices), dtype=int)]
+        isi = np.log(np.diff(spike_times))
+
+        X = np.ravel(isi)
+        X = np.ravel(isi).reshape(-1, 1)
+        M_best = GaussianMixture(n_components=2, covariance_type='spherical').fit(X)
+        x = np.linspace(np.log(1.5/1000), 0, 10000)
+        y = np.exp(M_best.score_samples(x.reshape(-1, 1)))
+        y_individual = M_best.predict_proba(x.reshape(-1, 1)) *  y[:, np.newaxis]
+
+        ax.hist(isi, bins=20, density=True)
+        ax.plot(x, y)
+        ax.plot(x, y_individual, 'k--')
+
+        ax.set_ylabel('Density')
+        ax.set_xlabel('log(ISI)')
+        ax.legend(['Gaussian Mixture'])
+
+        return fig

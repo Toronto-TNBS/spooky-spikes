@@ -54,13 +54,13 @@ class AnalyzeMER:
 
         for t in spiketrain:
             spike_matrix.append(
-                filtered_data[AnalyseMER.find_nearest(time, t - 0.001):AnalyseMER.find_nearest(time, t + 0.002)])
+                filtered_data[AnalyzeMER.find_nearest(time, t - 0.001):AnalyzeMER.find_nearest(time, t + 0.002)])
 
         spike_matrix = np.squeeze(spike_matrix)
 
         if spike_matrix.ndim == 1:
             spike_matrix = list(spike_matrix)
-            spike_matrix = AnalyseMER.box_pir(spike_matrix)
+            spike_matrix = AnalyzeMER.box_pir(spike_matrix)
             spike_matrix = np.delete(spike_matrix, -1, axis=1)
 
         return spike_matrix
@@ -70,6 +70,9 @@ class AnalyzeMER:
         bins = np.arange(0, np.max(spike_times) + bin_size, bin_size)
         spike_counts = np.histogram(spike_times, bins=bins)[0]
         autocorr = np.correlate(spike_counts, spike_counts, mode='full')[len(spike_counts) - 1:]
+        # Following 2 lines are potential faster replacement for above line.
+        # import scipy
+        # autocorr = scipy.signal.correlate(spike_counts, spike_counts)
         autocorr_lag = np.arange(0, len(autocorr)) * bin_size
         autocorr = autocorr[autocorr_lag <= max_lag]
         autocorr_lag = autocorr_lag[autocorr_lag <= max_lag]
@@ -196,7 +199,7 @@ class AnalyzeMER:
 
         filtered_data = ff.butter(raw_data, 300, 3000, fs, order=4, zero_phase=True)
 
-        waveforms = AnalyseMER.get_spike_matrix(filtered_data, spiketrain, time)
+        waveforms = AnalyzeMER.get_spike_matrix(filtered_data, spiketrain, time)
         mean_waveform = waveforms.mean(axis=0)
         std_waveform = waveforms.std(axis=0).mean(axis=-1)
         peak_range = mean_waveform.max(axis=-1) - mean_waveform.min(axis=-1)
@@ -206,7 +209,7 @@ class AnalyzeMER:
 
     def kaneoke_oscillation_power(self, spike_train, low, high, bin_size, max_lag):
 
-        autocorr, autocorr_lag = AnalyseMER.autocorrelation(spike_train, bin_size, max_lag)
+        autocorr, autocorr_lag = AnalyzeMER.autocorrelation(spike_train, bin_size, max_lag)
 
         freqs = np.linspace(4, 30, num=1000)
 
@@ -227,7 +230,7 @@ class AnalyzeMER:
 
     def waveform_spiketrain_oscillation(self, spike_train, low_freq, high_freq):
 
-        binary_sequence = AnalyseMER.spiketrain_to_binary(spike_train, 500)
+        binary_sequence = AnalyzeMER.spiketrain_to_binary(spike_train, 500)
 
         spiketrain_waveform = ff.butter(binary_sequence, low_freq, high_freq, 500, order=4, zero_phase=True)
 

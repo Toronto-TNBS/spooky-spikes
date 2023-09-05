@@ -992,14 +992,6 @@ class App(GUIStyles):
             self.tab_main_plot()
             self.plot_toolbar_main()
 
-            # Need conditional because if filtering unchecked and no threshold set, uses all points > 0 V
-            # in the loops and reduces speed.
-            if spike.main_threshold_set and spike.lag_time != 0 and spike.time_interval != 0:
-                self.update_oscillations_parameters()
-                self.delete_plot(self.plot_canvas_oscillations)
-                self.tab_oscillations_plot()
-                self.plot_toolbar_oscillations()
-
 
     def check_spikesorting_choice(self):
         print(f'Spike sorting: {self.check_spikesorting_status.get()}')
@@ -1045,12 +1037,6 @@ class App(GUIStyles):
             # Since coloured spikes are selected automatically from checking spike sorting option,
             # must update parameters according to selected cluster.
             self.update_coloured_spikesorting_parameters()
-            # Oscillations tab no longer passing un-sorted peaks, but automatically-selected cluster peaks.
-            self.update_coloured_oscillations_parameters()
-            self.delete_plot(self.plot_canvas_oscillations)
-            self.tab_oscillations_plot()
-            self.plot_toolbar_oscillations()
-            # Update left panel
             self.update_properties()
 
             if self.check_spiketrain_status.get() == 0:
@@ -1104,10 +1090,6 @@ class App(GUIStyles):
             self.tab_main_plot()
             self.plot_toolbar_main()
 
-            self.update_oscillations_parameters()
-            self.delete_plot(self.plot_canvas_oscillations)
-            self.tab_oscillations_plot()
-            self.plot_toolbar_oscillations()
         else:
             spike.segment_inverted = False
             read.segment_inverted = False
@@ -1122,11 +1104,6 @@ class App(GUIStyles):
             self.delete_plot(self.plot_canvas_main)
             self.tab_main_plot()
             self.plot_toolbar_main()
-
-            self.update_oscillations_parameters()
-            self.delete_plot(self.plot_canvas_oscillations)
-            self.tab_oscillations_plot()
-            self.plot_toolbar_oscillations()
 
 
     def ask_save_filepath(self, colour=None, properties=False):
@@ -1312,12 +1289,6 @@ class App(GUIStyles):
             self.tab_spikesorting_plot()
             self.plot_toolbar_spikesorting()
 
-        if spike.main_threshold != 0 and spike.lag_time != 0 and spike.time_interval != 0:
-            self.update_oscillations_parameters()
-            self.delete_plot(self.plot_canvas_oscillations)
-            self.tab_oscillations_plot()
-            self.plot_toolbar_oscillations()
-
 
     def button_set_threshold_press(self):
         if self.entry_threshold_factor.get() == '' or self.entry_threshold_factor.get() == 0:
@@ -1342,11 +1313,6 @@ class App(GUIStyles):
                 self.delete_plot(self.plot_canvas_main)
                 self.tab_main_plot()
                 self.plot_toolbar_main()
-
-            # Oscillations clear plot bc no threshold
-            self.delete_plot(canvas=self.plot_canvas_oscillations)
-            self.tab_oscillations_plot()
-            self.plot_toolbar_oscillations()
 
             # self.entry_lag_time.delete(0, END)
             # self.entry_lag_time.insert(0, '')
@@ -1376,11 +1342,14 @@ class App(GUIStyles):
             read.threshold_factor = None
 
         else:
+            print('Enter threshold set process')
             spike.num_threshold_sets += 1
             spike.main_threshold_set = True
             spike.main_threshold_factor = float(self.entry_threshold_factor.get())
+            print(f'Threshold factor retrieved: {spike.main_threshold_factor}')
             spike.main_threshold = spike.get_main_threshold(magnitudes=spike.main_magnitudes,
                                                  factor=spike.main_threshold_factor)
+            print(f'Threshold calculated: {spike.main_threshold}')
             self.label_threshold['text'] = f'Threshold: {round(spike.main_threshold, 2)} V ' \
                                            f'[Factor: {spike.main_threshold_factor}]'
 
@@ -1389,6 +1358,7 @@ class App(GUIStyles):
                 magnitudes=spike.main_magnitudes,
                 threshold=spike.main_threshold
             )
+            print('Spike events computed.')
             spike.main_event_peak_times = events[0]
             spike.main_event_peak_mags = events[1]
             spike.spiketrain_indices = events[2]    # Peak indices.
@@ -1400,25 +1370,23 @@ class App(GUIStyles):
 
             # Spike sorting update with newly set threshold.
             self.update_spikesorting_parameters()
+            print('Spike sorting parameters updated')
             self.delete_plot(canvas=self.plot_canvas_spikesorting)
             self.tab_spikesorting_plot()
             self.plot_toolbar_spikesorting()
-
-            # Oscillation plot update with changing threshold.
-            self.update_oscillations_parameters()
-            self.delete_plot(self.plot_canvas_oscillations)
-            self.tab_oscillations_plot()
-            self.plot_toolbar_oscillations()
+            print('SS plot updated.')
 
             self.update_properties()
+            print('Features updated.')
 
             read.threshold = spike.main_threshold
             read.threshold_factor = spike.main_threshold_factor
 
-
+        print('Updating main plot.')
         self.delete_plot(self.plot_canvas_main)
         self.tab_main_plot()
         self.plot_toolbar_main()
+        print('Main plot updated.')
 
 
     def check_spiketrain_choice(self):
@@ -1469,11 +1437,6 @@ class App(GUIStyles):
 
         self.update_coloured_spikesorting_parameters()
 
-        self.update_coloured_oscillations_parameters()
-        self.delete_plot(self.plot_canvas_oscillations)
-        self.tab_oscillations_plot()
-        self.plot_toolbar_oscillations()
-
         self.update_properties()
 
 
@@ -1521,10 +1484,6 @@ class App(GUIStyles):
         self.plot_toolbar_main()
 
         self.update_coloured_spikesorting_parameters()
-        self.update_coloured_oscillations_parameters()
-        self.delete_plot(self.plot_canvas_oscillations)
-        self.tab_oscillations_plot()
-        self.plot_toolbar_oscillations()
 
         self.update_properties()
 
@@ -1540,40 +1499,6 @@ class App(GUIStyles):
         self.toolbar_frame = Frame(self.tab_spikesorting)
         self.toolbar_frame.grid(column=0, row=4, columnspan=5)
         self.toolbar = NavigationToolbar2Tk(self.plot_canvas_spikesorting, self.toolbar_frame)
-        self.toolbar.configure(background='white')
-        self.toolbar._message_label.configure(background='white')
-        for i in self.toolbar.winfo_children():
-            i.configure(background='white', bd=0)
-
-
-    def tab_psd_plot(self):
-        fig = spike.psd_plot()
-        self.plot_canvas_psd = FigureCanvasTkAgg(fig, master=self.tab_psd)
-        self.plot_canvas_psd.get_tk_widget().grid(column=0, row=2, columnspan=5, sticky='nesw')
-        self.plot_canvas_psd.draw()
-
-
-    def plot_toolbar_psd(self):
-        self.toolbar_frame = Frame(self.tab_psd)
-        self.toolbar_frame.grid(column=0, row=3, columnspan=5)
-        self.toolbar = NavigationToolbar2Tk(self.plot_canvas_psd, self.toolbar_frame)
-        self.toolbar.configure(background='white')
-        self.toolbar._message_label.configure(background='white')
-        for i in self.toolbar.winfo_children():
-            i.configure(background='white', bd=0)
-
-
-    def tab_oscillations_plot(self):
-        fig = spike.oscillations_plot()
-        self.plot_canvas_oscillations = FigureCanvasTkAgg(fig, master=self.tab_oscillations)
-        self.plot_canvas_oscillations.get_tk_widget().grid(column=0, row=0, sticky='nesw')
-        self.plot_canvas_oscillations.draw()
-
-
-    def plot_toolbar_oscillations(self):
-        self.toolbar_frame = Frame(self.tab_oscillations)
-        self.toolbar_frame.grid(column=0, row=5, columnspan=5)
-        self.toolbar = NavigationToolbar2Tk(self.plot_canvas_oscillations, self.toolbar_frame)
         self.toolbar.configure(background='white')
         self.toolbar._message_label.configure(background='white')
         for i in self.toolbar.winfo_children():
@@ -1657,6 +1582,7 @@ class App(GUIStyles):
 
 
     def update_properties(self):
+        print('Getting basic features')
         firing_rate = mer.get_FR(spike.spiketrain_indices)
         burst_index = mer.get_BI(spike.spiketrain_indices)
         cov = mer.get_CV(spike.spiketrain_indices)
@@ -1665,37 +1591,44 @@ class App(GUIStyles):
             snr = mer.get_snr(spike.main_magnitudes, spike.main_fs, spike.spiketrain_indices, spike.main_times)
             read.snr = snr
             self.label_snr_output['text'] = round(snr, 2)
-        # --- Spike train power
-        theta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 4, 8, 10e-3, 500e-3)
-        alpha_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 8, 12, 10e-3, 500e-3)
-        low_beta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 12, 21, 10e-3, 500e-3)
-        high_beta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 21, 30, 10e-3, 500e-3)
+        # --- Spike train power (UNCOMMENT THIS WHEN PROBLEM FIXED)
+        print('Getting spike train oscillations features')
+        print('Getting theta power')
+        # theta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 4, 8, 10e-3, 500e-3)
+        print('Getting alpha power')
+        # alpha_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 8, 12, 10e-3, 500e-3)
+        print('Getting low beta power')
+        # low_beta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 12, 21, 10e-3, 500e-3)
+        print('Getting high beta power')
+        # high_beta_spike_power = mer.kaneoke_oscillation_power(spike.spiketrain_indices, 21, 30, 10e-3, 500e-3)
 
-        # --- Burst duration
-        theta_wave, theta_time_wave, theta_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices, 4, 8)
-        alpha_wave, alpha_time_wave, alpha_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices, 8, 12)
-        low_beta_wave, low_beta_time_wave, low_beta_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices,
-                                                                                                     12, 21)
-        high_beta_wave, high_beta_time_wave, high_beta_wave_power = mer.waveform_spiketrain_oscillation(
-            spike.spiketrain_indices, 21, 30)
-
-        spiketrain_burst_threshold = mer.burst_threshold(spike.spiketrain_indices, data_type='spiketrain')
-
-        theta_wave_envelope = mer.get_waveform_envelope(theta_wave)
-        alpha_wave_envelope = mer.get_waveform_envelope(alpha_wave)
-        low_beta_wave_envelope = mer.get_waveform_envelope(low_beta_wave)
-        high_beta_wave_envelope = mer.get_waveform_envelope(high_beta_wave)
-
-        theta_spiketrain_mean_burst_duration = \
-        mer.burst_features(theta_time_wave, theta_wave_envelope, spiketrain_burst_threshold)[1]
-        alpha_spiketrain_mean_burst_duration = \
-        mer.burst_features(alpha_time_wave, alpha_wave_envelope, spiketrain_burst_threshold)[1]
-        low_beta_spiketrain_mean_burst_duration = \
-        mer.burst_features(low_beta_time_wave, low_beta_wave_envelope, spiketrain_burst_threshold)[1]
-        high_beta_spiketrain_mean_burst_duration = \
-        mer.burst_features(high_beta_time_wave, high_beta_wave_envelope, spiketrain_burst_threshold)[1]
+        # --- Burst duration (ALSO COMMENTED OUT)
+        print('Getting burst duration features.')
+        # theta_wave, theta_time_wave, theta_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices, 4, 8)
+        # alpha_wave, alpha_time_wave, alpha_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices, 8, 12)
+        # low_beta_wave, low_beta_time_wave, low_beta_wave_power = mer.waveform_spiketrain_oscillation(spike.spiketrain_indices,
+        #                                                                                              12, 21)
+        # high_beta_wave, high_beta_time_wave, high_beta_wave_power = mer.waveform_spiketrain_oscillation(
+        #     spike.spiketrain_indices, 21, 30)
+        #
+        # spiketrain_burst_threshold = mer.burst_threshold(spike.spiketrain_indices, data_type='spiketrain')
+        #
+        # theta_wave_envelope = mer.get_waveform_envelope(theta_wave)
+        # alpha_wave_envelope = mer.get_waveform_envelope(alpha_wave)
+        # low_beta_wave_envelope = mer.get_waveform_envelope(low_beta_wave)
+        # high_beta_wave_envelope = mer.get_waveform_envelope(high_beta_wave)
+        #
+        # theta_spiketrain_mean_burst_duration = \
+        # mer.burst_features(theta_time_wave, theta_wave_envelope, spiketrain_burst_threshold)[1]
+        # alpha_spiketrain_mean_burst_duration = \
+        # mer.burst_features(alpha_time_wave, alpha_wave_envelope, spiketrain_burst_threshold)[1]
+        # low_beta_spiketrain_mean_burst_duration = \
+        # mer.burst_features(low_beta_time_wave, low_beta_wave_envelope, spiketrain_burst_threshold)[1]
+        # high_beta_spiketrain_mean_burst_duration = \
+        # mer.burst_features(high_beta_time_wave, high_beta_wave_envelope, spiketrain_burst_threshold)[1]
         # --- Burst duration (END)
         # --- LFP power
+        print('Getting LFP power features.')
         fs_lfp = 250  # ????
         raw_data_lfp = mer.get_LFP_data(spike.main_magnitudes, spike.main_fs, fs_lfp)
         raw_data_lfp = (raw_data_lfp - np.mean(raw_data_lfp)) / np.std(raw_data_lfp)
@@ -1704,6 +1637,7 @@ class App(GUIStyles):
         low_beta_lfp_wave, low_beta_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 12, 21)
         high_beta_lfp_wave, high_beta_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 21, 30)
 
+        print('Updating feature display.')
         percent_isi_violations = spike.get_percent_isi_violations()
         read.percent_isi_violations = percent_isi_violations
         self.label_interspike_output['text'] = round(percent_isi_violations, 2)
@@ -1722,18 +1656,18 @@ class App(GUIStyles):
             self.label_silhouette_output['text'] = round(silhouette, 2)
 
         # theta_power, alpha_power, low_beta_power, high_beta_power = spike.get_wave_powers()
-        self.label_theta_power_output['text'] = round(theta_spike_power, 2)
-        self.label_theta_burst_output['text'] = round(theta_spiketrain_mean_burst_duration, 2)
-        read.theta_power = theta_spike_power
-        self.label_alpha_power_output['text'] = round(alpha_spike_power, 2)
-        self.label_alpha_burst_output['text'] = round(alpha_spiketrain_mean_burst_duration, 2)
-        read.alpha_power = alpha_spike_power
-        self.label_lowbeta_power_output['text'] = round(low_beta_spike_power, 2)
-        self.label_lowbeta_burst_output['text'] = round(low_beta_spiketrain_mean_burst_duration, 2)
-        read.low_beta_power = low_beta_spike_power
-        self.label_highbeta_power_output['text'] = round(high_beta_spike_power, 2)
-        self.label_highbeta_burst_output['text'] = round(high_beta_spiketrain_mean_burst_duration, 2)
-        read.high_beta_power = high_beta_spike_power
+        # self.label_theta_power_output['text'] = round(theta_spike_power, 2)
+        # self.label_theta_burst_output['text'] = round(theta_spiketrain_mean_burst_duration, 2)
+        # read.theta_power = theta_spike_power
+        # self.label_alpha_power_output['text'] = round(alpha_spike_power, 2)
+        # self.label_alpha_burst_output['text'] = round(alpha_spiketrain_mean_burst_duration, 2)
+        # read.alpha_power = alpha_spike_power
+        # self.label_lowbeta_power_output['text'] = round(low_beta_spike_power, 2)
+        # self.label_lowbeta_burst_output['text'] = round(low_beta_spiketrain_mean_burst_duration, 2)
+        # read.low_beta_power = low_beta_spike_power
+        # self.label_highbeta_power_output['text'] = round(high_beta_spike_power, 2)
+        # self.label_highbeta_burst_output['text'] = round(high_beta_spiketrain_mean_burst_duration, 2)
+        # read.high_beta_power = high_beta_spike_power
 
         self.label_theta_lfp_output['text'] = round(theta_lfp_power, 2)
         self.label_alpha_lfp_output['text'] = round(alpha_lfp_power, 2)
@@ -1742,7 +1676,25 @@ class App(GUIStyles):
 
 
     def button_plot_isi_press(self):
-        pass
+        # Limit when this is called based on state of data (filtered, spike sorted, etc.)
+        # Calculations of histogram will depend on cluster selected (if exists), filtering, etc.
+        # Make it such that it can be called regardless of spike sorting being present.
+        fig = spike.isi_plot()
+        isi_win = Tk()
+        isi_win.title('Log-Interspike-Interval Histogram')
+        isi_canvas = FigureCanvasTkAgg(fig, master=isi_win)
+        isi_canvas.get_tk_widget().grid(column=0, row=0, sticky='nesw')
+        isi_canvas.draw()
+
+        toolbar_frame = Frame(isi_win)
+        toolbar_frame.grid(column=0, row=9, columnspan=5)
+        toolbar = NavigationToolbar2Tk(isi_canvas, toolbar_frame)
+        toolbar.configure(background='white')
+        toolbar._message_label.configure(background='white')
+        for i in toolbar.winfo_children():
+            i.configure(background='white', bd=0)
+
+        isi_win.mainloop()
 
 
     def button_plot_oscillations_press(self):
@@ -1811,20 +1763,6 @@ class App(GUIStyles):
         spike.psd_good_file = False
         self.psd_frequencies = []
         self.psd_power = []
-        self.psd_plot_xlim = [0, 100]
-        self.entry_psd_fFrom['style'] = 'unchecked.TEntry'
-        self.entry_psd_fFrom.delete(0, END)
-        self.entry_psd_fFrom.insert(0, '0')
-        self.entry_psd_fFrom['state'] = 'disabled'
-        self.entry_psd_fTo['style'] = 'unchecked.TEntry'
-        self.entry_psd_fTo.delete(0, END)
-        self.entry_psd_fTo.insert(0, '100')
-        self.entry_psd_fTo['state'] = 'disabled'
-        self.label_psd_fFrom_fTo['text'] = 'fFrom: 0 Hz\nfTo: 100 Hz'
-
-        self.delete_plot(self.plot_canvas_psd)
-        self.tab_psd_plot()
-        self.plot_toolbar_psd()
 
         # spike.lag_time = 0.5
         # spike.time_interval = 0.01
@@ -1841,10 +1779,6 @@ class App(GUIStyles):
         # self.entry_time_interval['state'] = 'disabled'
         # self.entry_time_interval['style'] = 'unchecked.TEntry'
         # self.label_lag_time_interval['text'] = f'Lag: 0.5 s\nInverval: 0.01 s'
-
-        self.delete_plot(self.plot_canvas_oscillations)
-        self.tab_oscillations_plot()
-        self.plot_toolbar_oscillations()
 
         read.snr = 0
         read.percent_isi_violations = 0
