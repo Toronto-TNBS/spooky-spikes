@@ -52,8 +52,12 @@ class SpikeAnalysis:
         self.labels = []
 
         self.psd_good_file = False
-        self.psd_frequencies = []
-        self.psd_power = []
+        self.lfp_psd_freqs = []
+        self.lfp_psd_power = []
+        self.lfp_theta_wave = []
+        self.lfp_alpha_wave = []
+        self.lfp_low_beta_wave = []
+        self.lfp_high_beta_wave = []
         self.psd_plot_xlim = [0,100]
 
         self.lag_time = 0.5
@@ -359,9 +363,10 @@ class SpikeAnalysis:
 
 
     def get_psd(self, magnitudes, fs):
-        F = 10
-        freqs, psd = welch(magnitudes, nfft=F * fs, fs=fs, nperseg=fs)
-        return freqs, psd
+        # F = 10
+        # freqs, psd = welch(magnitudes, nfft=F * fs, fs=fs, nperseg=fs)
+        freqs, power = welch(magnitudes, fs, nperseg=256)
+        return freqs, power
 
 
     def get_spike_oscillations(self, magnitudes, event_indices, fs, lag_time, time_interval):
@@ -608,5 +613,23 @@ class SpikeAnalysis:
         ax.set_ylabel('Density')
         ax.set_xlabel('log(ISI)')
         ax.legend(['Gaussian Mixture'])
+
+        return fig
+
+
+    def lfp_plot(self):
+        fig = plt.figure()
+        gs = fig.add_gridspec(4, 2)
+        ax1 = fig.add_subplot(gs[:, 0])
+        ax2 = fig.add_subplot(gs[0, 1])
+        ax3 = fig.add_subplot(gs[1, 1])
+        ax4 = fig.add_subplot(gs[2, 1])
+        ax5 = fig.add_subplot(gs[3, 1])
+
+        ax1.plot(self.lfp_psd_freqs, self.lfp_psd_power)
+        ax2.plot(np.arange(len(self.lfp_theta_wave)), self.lfp_theta_wave)
+        ax3.plot(np.arange(len(self.lfp_alpha_wave)), self.lfp_alpha_wave)
+        ax4.plot(np.arange(len(self.lfp_low_beta_wave)), self.lfp_low_beta_wave)
+        ax5.plot(np.arange(len(self.lfp_high_beta_wave)), self.lfp_high_beta_wave)
 
         return fig

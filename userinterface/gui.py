@@ -11,6 +11,7 @@ import sys
 import base64
 from images import base64_image
 from spikedata.AnalyzeMER import AnalyzeMER
+from scipy.signal import welch
 
 read = ReadSpike()
 spike = SpikeAnalysis()
@@ -147,8 +148,8 @@ class App(GUIStyles):
         self.dropdown_save.grid(column=0, row=9, columnspan=2, sticky='we', padx=self.widget_align_pad, pady=5)
 
         self.num_rows = self.grid_size()[1]
-        self.num_columns = self.grid_size()[0]
-        self.dynamic_resize()
+        self.num_cols = self.grid_size()[0]
+        self.dynamic_resize(self, self.num_rows, self.num_cols)
 
         self.notebook = ttk.Notebook(self)
         self.notebook.grid(column=2, row=0, rowspan=self.num_rows, sticky='nesw')
@@ -834,11 +835,11 @@ class App(GUIStyles):
                 sys.exit()
 
 
-    def dynamic_resize(self):
-        for i in range(self.num_columns):
-            Grid.columnconfigure(self, index=i, weight=1)
-        for i in range(self.num_rows):
-            Grid.rowconfigure(self, index=i, weight=1)
+    def dynamic_resize(self, root, rows, cols):
+        for i in range(cols):
+            Grid.columnconfigure(root, index=i, weight=1)
+        for i in range(rows):
+            Grid.rowconfigure(root, index=i, weight=1)
 
 
     def button_file_press(self):
@@ -911,14 +912,7 @@ class App(GUIStyles):
             self.entry_threshold_factor.insert(0, '2')
 
             spike.psd_good_file = True
-            frequencies, psd = spike.get_psd(magnitudes=spike.main_magnitudes, fs=spike.main_fs)
-            spike.psd_frequencies = frequencies
-            spike.psd_power = psd
-
-            # spike.psd_plot_xlim = [0, 100]
-            # self.delete_plot(self.plot_canvas_psd)
-            # self.tab_psd_plot()
-            # self.plot_toolbar_psd()
+            self.update_lfp_psd(spike.main_magnitudes, spike.main_fs)
 
 
     def dropdown_channel_choice(self):
@@ -947,9 +941,7 @@ class App(GUIStyles):
             self.plot_toolbar_main()
 
             spike.psd_good_file = True
-            frequencies, psd = spike.get_psd(magnitudes=spike.main_magnitudes, fs=spike.main_fs)
-            spike.psd_frequencies = frequencies
-            spike.psd_power = psd
+            self.update_lfp_psd(spike.main_magnitudes, spike.main_fs)
 
 
     def check_filtering_choice(self):
@@ -1543,19 +1535,15 @@ class App(GUIStyles):
         spike.coloured_spike_matrix = spikes
 
 
-    def update_oscillations_parameters(self):
-        events = spike.get_event_peaks(magnitudes=spike.main_magnitudes,
-                                       times=spike.main_times,
-                                       threshold=spike.main_threshold)
-        spike.spiketrain_indices = events[2]
-
-        spike.frequencies_autocorr, spike.psd_autocorr, spike.binned_time, spike.autocorr = spike.get_spike_oscillations(
-            magnitudes=spike.main_magnitudes,
-            event_indices=events[2],
-            fs=spike.main_fs,
-            lag_time=spike.lag_time,
-            time_interval=spike.time_interval
-        )
+    def update_lfp_psd(self, signal, fs):
+        fs_lfp = 250
+        raw_data_lfp = mer.get_LFP_data(signal, fs, fs_lfp)
+        raw_data_lfp = (raw_data_lfp - np.mean(raw_data_lfp)) / np.std(raw_data_lfp)
+        spike.lfp_theta_wave, theta_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 4, 8)
+        spike.lfp_alpha_wave, alpha_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 8, 12)
+        spike.lfp_low_beta_wave, low_beta_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 12, 21)
+        spike.lfp_high_beta_wave, high_beta_lfp_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 21, 30)
+        spike.lfp_psd_freqs, spike.lfp_psd_power = spike.get_psd(magnitudes=raw_data_lfp, fs=fs_lfp)
 
 
     def update_coloured_oscillations_parameters(self):
@@ -1669,6 +1657,10 @@ class App(GUIStyles):
         # self.label_highbeta_burst_output['text'] = round(high_beta_spiketrain_mean_burst_duration, 2)
         # read.high_beta_power = high_beta_spike_power
 
+        spike.lfp_theta_wave = theta_lfp_wave
+        spike.lfp_alpha_wave = alpha_lfp_wave
+        spike.lfp_low_beta_wave = low_beta_lfp_wave
+        spike.lfp_high_beta_wave = high_beta_lfp_wave
         self.label_theta_lfp_output['text'] = round(theta_lfp_power, 2)
         self.label_alpha_lfp_output['text'] = round(alpha_lfp_power, 2)
         self.label_lowbeta_lfp_output['text'] = round(low_beta_lfp_power, 2)
@@ -1687,13 +1679,14 @@ class App(GUIStyles):
         isi_canvas.draw()
 
         toolbar_frame = Frame(isi_win)
-        toolbar_frame.grid(column=0, row=9, columnspan=5)
+        toolbar_frame.grid(column=0, row=1)
         toolbar = NavigationToolbar2Tk(isi_canvas, toolbar_frame)
         toolbar.configure(background='white')
         toolbar._message_label.configure(background='white')
         for i in toolbar.winfo_children():
             i.configure(background='white', bd=0)
 
+        self.dynamic_resize(isi_win, 2, 1)
         isi_win.mainloop()
 
 
@@ -1702,7 +1695,23 @@ class App(GUIStyles):
 
 
     def button_plot_lfp_press(self):
-        pass
+        fig = spike.lfp_plot()
+        lfp_win = Tk()
+        lfp_win.title('LFP PSD')
+        lfp_canvas = FigureCanvasTkAgg(fig, master=lfp_win)
+        lfp_canvas.get_tk_widget().grid(column=0, row=0, sticky='nesw')
+        lfp_canvas.draw()
+
+        toolbar_frame = Frame(lfp_win)
+        toolbar_frame.grid(column=0, row=1)
+        toolbar = NavigationToolbar2Tk(lfp_canvas, toolbar_frame)
+        toolbar.configure(background='white')
+        toolbar._message_label.configure(background='white')
+        for i in toolbar.winfo_children():
+            i.configure(background='white', bd=0)
+
+        self.dynamic_resize(lfp_win, 2, 1)
+        lfp_win.mainloop()
 
 
     def reset_all_parameters(self):
@@ -1761,8 +1770,12 @@ class App(GUIStyles):
         self.plot_toolbar_spikesorting()
 
         spike.psd_good_file = False
-        self.psd_frequencies = []
-        self.psd_power = []
+        spike.lfp_psd_freqs = []
+        spike.lfp_psd_power = []
+        spike.lfp_theta_wave = []
+        spike.lfp_alpha_wave = []
+        spike.lfp_low_beta_wave = []
+        spike.lfp_high_beta_wave = []
 
         # spike.lag_time = 0.5
         # spike.time_interval = 0.01
