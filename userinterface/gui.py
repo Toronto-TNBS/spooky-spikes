@@ -1294,19 +1294,17 @@ class App(GUIStyles):
             self.label_threshold['text'] = f'Threshold: {round(spike.main_threshold, 2)} V ' \
                                            f'[Factor: {spike.main_threshold_factor}]'
 
-            if self.check_spikesorting_status.get() == 1:
-                # Spike sorting clear plot bc no threshold
-                self.check_spikesorting.invoke()
-            else:
-                # Spike sorting clear plot bc no threshold
-                # self.delete_plot(canvas=self.plot_canvas_spikesorting)
-                # self.tab_spikesorting_plot()
-                # self.plot_toolbar_spikesorting()
+            spike.main_event_peak_times = []
+            spike.main_event_peak_mags = []
 
-                # Main plot reset if spike sorting was enabled.
-                self.delete_plot(self.plot_canvas_main)
-                self.tab_main_plot()
-                self.plot_toolbar_main()
+            if self.check_spikesorting_status.get() == 1:
+                self.check_spikesorting.invoke()
+            if self.check_spiketrain_status.get() == 1:
+                self.check_spiketrain.invoke()
+            if self.check_eventpeaks_status.get() == 1:
+                self.check_eventpeaks.invoke()
+            if self.check_thresholdbar_status.get() == 1:
+                self.check_thresholdbar.invoke()
 
             # self.entry_lag_time.delete(0, END)
             # self.entry_lag_time.insert(0, '')

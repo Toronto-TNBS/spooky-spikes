@@ -179,7 +179,7 @@ class SpikeAnalysis:
             events, indices = self.get_coloured_events()
             events = events[colour_list.index(f'tab:{self.selected_cluster}')]
             ax[0].eventplot(events, colors=f'tab:{self.selected_cluster}')
-        elif self.main_spiketrain_disp:
+        elif self.main_spiketrain_disp and self.main_threshold != 0:
             events = self.get_event_peaks(
                 times=self.main_times,
                 magnitudes=self.main_magnitudes,
