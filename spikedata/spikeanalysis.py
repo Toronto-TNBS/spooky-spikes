@@ -77,7 +77,7 @@ class SpikeAnalysis:
         self.coloured_binned_time = []
         self.coloured_autocorr = []
 
-        self.spiketrain_indices = []
+        self.features_spiketrain_indices = []    # Will be updated depending on spike-selection method (i.e. thresh vs sort)
 
 
     def main_plot(self):
@@ -596,7 +596,7 @@ class SpikeAnalysis:
     def isi_plot(self):
         fig, ax = plt.subplots(1, 1)
         # Ensure that spikes are from the target neuron, probably by requiring spike sorting before plotting.
-        spike_times = self.main_times[np.array(list(self.spiketrain_indices), dtype=int)]
+        spike_times = self.main_times[np.array(list(self.features_spiketrain_indices), dtype=int)]
         isi = np.log(np.diff(spike_times))
 
         X = np.ravel(isi)

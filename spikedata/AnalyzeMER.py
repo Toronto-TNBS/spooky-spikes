@@ -69,7 +69,11 @@ class AnalyzeMER:
     def autocorrelation(spike_times, bin_size, max_lag):
         bins = np.arange(0, np.max(spike_times) + bin_size, bin_size)
         spike_counts = np.histogram(spike_times, bins=bins)[0]
+        print('Correlating...')
+        print(len(spike_times))
+        print(len(spike_counts))
         autocorr = np.correlate(spike_counts, spike_counts, mode='full')[len(spike_counts) - 1:]
+        print('Done correlating.')
         # Following 2 lines are potential faster replacement for above line.
         # import scipy
         # autocorr = scipy.signal.correlate(spike_counts, spike_counts)
@@ -208,9 +212,9 @@ class AnalyzeMER:
         return peak_range / noise
 
     def kaneoke_oscillation_power(self, spike_train, low, high, bin_size, max_lag):
-
+        print('Auto-correlating...')
         autocorr, autocorr_lag = AnalyzeMER.autocorrelation(spike_train, bin_size, max_lag)
-
+        print('Done auto-correlating.')
         freqs = np.linspace(4, 30, num=1000)
 
         ls = LombScargle(autocorr_lag, autocorr)
