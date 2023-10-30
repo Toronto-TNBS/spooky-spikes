@@ -662,40 +662,40 @@ class App(GUIStyles):
 
         self.label_oscillations_method = ttk.Label(
             master=self.frame_oscillations_aux,
-            text='Oscillations Method:',
+            text='Oscillations Plot',
             style='outputs.TLabel',
             background=self.left_panel_bg,
             anchor='center'
         )
         self.label_oscillations_method.grid(column=0, row=0, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
 
-        self.oscillations_method_menu = Menu(tearoff=False)
-        self.oscillations_method_menu.add_command(
-            label='Method 1',
-            # command=self.dropdown_save_properties,
-            font=self.menu_item_font
-        )
-        self.oscillations_method_menu.add_command(
-            label='Method 2',
-            # command=self.some_function,
-            font=self.menu_item_font
-        )
-        self.dropdown_oscillations_method = ttk.Menubutton(
-            master=self.frame_oscillations_aux,
-            direction='below',
-            text='Select Method',
-            menu=self.oscillations_method_menu,
-            style='TMenubutton',
-        )
-        self.dropdown_oscillations_method.grid(column=0, row=1, sticky='we', padx=self.header_align_pad)
+        # self.oscillations_method_menu = Menu(tearoff=False)
+        # self.oscillations_method_menu.add_command(
+        #     label='Method 1',
+        #     # command=self.dropdown_save_properties,
+        #     font=self.menu_item_font
+        # )
+        # self.oscillations_method_menu.add_command(
+        #     label='Method 2',
+        #     # command=self.some_function,
+        #     font=self.menu_item_font
+        # )
+        # self.dropdown_oscillations_method = ttk.Menubutton(
+        #     master=self.frame_oscillations_aux,
+        #     direction='below',
+        #     text='Select Method',
+        #     menu=self.oscillations_method_menu,
+        #     style='TMenubutton',
+        # )
+        # self.dropdown_oscillations_method.grid(column=0, row=1, sticky='we', padx=self.header_align_pad)
 
         self.button_plot_oscillations = ttk.Button(
             master=self.frame_oscillations_aux,
-            text='Generate Plot',
+            text='Generate',
             style='TButton',
             command=self.button_plot_oscillations_press
         )
-        self.button_plot_oscillations.grid(column=0, row=2, sticky='ew', padx=self.widget_align_pad, pady=self.label_output_pady)
+        self.button_plot_oscillations.grid(column=0, row=1, sticky='ew', padx=self.widget_align_pad, pady=self.label_output_pady)
 
 
         self.label_lfp = ttk.Label(
@@ -1339,7 +1339,7 @@ class App(GUIStyles):
             print('Spike events computed.')
             spike.main_event_peak_times = events[0]
             spike.main_event_peak_mags = events[1]
-            spike.features_features_spiketrain_indices = events[2]    # Peak indices.
+            spike.features_spiketrain_indices = events[2]    # Peak indices.
 
             # self.entry_lag_time['state'] = 'normal'
             # self.entry_lag_time['style'] = 'TEntry'
@@ -1490,7 +1490,7 @@ class App(GUIStyles):
         events = spike.get_event_peaks(magnitudes=spike.main_magnitudes,
                                        times=spike.main_times,
                                        threshold=spike.main_threshold)
-        spike.features_features_spiketrain_indices = events[2]
+        spike.features_spiketrain_indices = events[2]
 
         events, spikes = spike.get_spike_windows(
             magnitudes=spike.main_magnitudes,
@@ -1528,16 +1528,16 @@ class App(GUIStyles):
         fs_lfp = 250
         raw_data_lfp = mer.get_LFP_data(signal, fs, fs_lfp)
         raw_data_lfp = (raw_data_lfp - np.mean(raw_data_lfp)) / np.std(raw_data_lfp)
-        spike.lfp_theta_wave, lfp_theta_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 4, 8)
-        spike.lfp_alpha_wave, lfp_alpha_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 8, 12)
-        spike.lfp_low_beta_wave, lfp_low_beta_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 12, 21)
-        spike.lfp_high_beta_wave, lfp_high_beta_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 21, 30)
+        spike.lfp_theta_wave, read.lfp_theta_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 4, 8)
+        spike.lfp_alpha_wave, read.lfp_alpha_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 8, 12)
+        spike.lfp_low_beta_wave, read.lfp_low_beta_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 12, 21)
+        spike.lfp_high_beta_wave, read.lfp_high_beta_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 21, 30)
         spike.lfp_psd_freqs, spike.lfp_psd_power = spike.get_psd(magnitudes=raw_data_lfp, fs=fs_lfp)
 
-        self.label_theta_lfp_output['text'] = round(lfp_theta_power, 2)
-        self.label_alpha_lfp_output['text'] = round(lfp_alpha_power, 2)
-        self.label_lowbeta_lfp_output['text'] = round(lfp_low_beta_power, 2)
-        self.label_highbeta_lfp_output['text'] = round(lfp_high_beta_power, 2)
+        self.label_theta_lfp_output['text'] = round(read.lfp_theta_power, 2)
+        self.label_alpha_lfp_output['text'] = round(read.lfp_alpha_power, 2)
+        self.label_lowbeta_lfp_output['text'] = round(read.lfp_low_beta_power, 2)
+        self.label_highbeta_lfp_output['text'] = round(read.lfp_high_beta_power, 2)
 
 
     def update_basic_properties(self):
@@ -1564,7 +1564,7 @@ class App(GUIStyles):
             self.label_silhouette_output['text'] = round(silhouette, 2)
 
         elif spike.main_threshold_set:
-            events = spike.features_features_spiketrain_indices
+            events = spike.features_spiketrain_indices
         else:
             self.label_snr_output['text'] = ''
             self.label_interspike_output['text'] = ''
@@ -1606,7 +1606,7 @@ class App(GUIStyles):
             self.label_highbeta_burst_output['text'] = ''
             return
 
-        events = spike.features_features_spiketrain_indices / spike.main_fs
+        events = spike.features_spiketrain_indices / spike.main_fs
         # --- Spike train power (UNCOMMENT THIS WHEN PROBLEM FIXED)
         print('Kaneoke functions.')
         theta_spike_power = mer.kaneoke_oscillation_power(events, 4, 8, 10e-3, 500e-3)
@@ -1616,43 +1616,47 @@ class App(GUIStyles):
 
         # --- Burst duration (ALSO COMMENTED OUT)
         print('Waveform spiketrain oscillation functions.')
-        theta_wave, theta_time_wave, theta_wave_power = mer.waveform_spiketrain_oscillation(events, 4, 8)
-        alpha_wave, alpha_time_wave, alpha_wave_power = mer.waveform_spiketrain_oscillation(events, 8, 12)
-        low_beta_wave, low_beta_time_wave, low_beta_wave_power = mer.waveform_spiketrain_oscillation(events,
+        spike.spike_oscillations_theta_wave, spike.spike_oscillations_theta_times, theta_wave_power = mer.waveform_spiketrain_oscillation(events, 4, 8)
+        spike.spike_oscillations_alpha_wave, spike.spike_oscillations_alpha_times, alpha_wave_power = mer.waveform_spiketrain_oscillation(events, 8, 12)
+        spike.spike_oscillations_low_beta_wave, spike.spike_oscillations_low_beta_times, low_beta_wave_power = mer.waveform_spiketrain_oscillation(events,
                                                                                                      12, 21)
-        high_beta_wave, high_beta_time_wave, high_beta_wave_power = mer.waveform_spiketrain_oscillation(
+        spike.spike_oscillations_high_beta_wave, spike.spike_oscillations_high_beta_times, high_beta_wave_power = mer.waveform_spiketrain_oscillation(
             events, 21, 30)
         print('Burst threshold function.')
         spiketrain_burst_threshold = mer.burst_threshold(events, data_type='spiketrain')
 
-        theta_wave_envelope = mer.get_waveform_envelope(theta_wave)
-        alpha_wave_envelope = mer.get_waveform_envelope(alpha_wave)
-        low_beta_wave_envelope = mer.get_waveform_envelope(low_beta_wave)
-        high_beta_wave_envelope = mer.get_waveform_envelope(high_beta_wave)
+        theta_wave_envelope = mer.get_waveform_envelope(spike.spike_oscillations_theta_wave)
+        alpha_wave_envelope = mer.get_waveform_envelope(spike.spike_oscillations_alpha_wave)
+        low_beta_wave_envelope = mer.get_waveform_envelope(spike.spike_oscillations_low_beta_wave)
+        high_beta_wave_envelope = mer.get_waveform_envelope(spike.spike_oscillations_high_beta_wave)
         print('Final burst calculation.')
         theta_spiketrain_mean_burst_duration = \
-        mer.burst_features(theta_time_wave, theta_wave_envelope, spiketrain_burst_threshold)[1]
+        mer.burst_features(spike.spike_oscillations_theta_times, theta_wave_envelope, spiketrain_burst_threshold)[1]
         alpha_spiketrain_mean_burst_duration = \
-        mer.burst_features(alpha_time_wave, alpha_wave_envelope, spiketrain_burst_threshold)[1]
+        mer.burst_features(spike.spike_oscillations_alpha_times, alpha_wave_envelope, spiketrain_burst_threshold)[1]
         low_beta_spiketrain_mean_burst_duration = \
-        mer.burst_features(low_beta_time_wave, low_beta_wave_envelope, spiketrain_burst_threshold)[1]
+        mer.burst_features(spike.spike_oscillations_low_beta_times, low_beta_wave_envelope, spiketrain_burst_threshold)[1]
         high_beta_spiketrain_mean_burst_duration = \
-        mer.burst_features(high_beta_time_wave, high_beta_wave_envelope, spiketrain_burst_threshold)[1]
+        mer.burst_features(spike.spike_oscillations_high_beta_times, high_beta_wave_envelope, spiketrain_burst_threshold)[1]
         # --- Burst duration (END)
 
         # theta_power, alpha_power, low_beta_power, high_beta_power = spike.get_wave_powers()
         self.label_theta_power_output['text'] = round(theta_spike_power, 2)
         self.label_theta_burst_output['text'] = round(theta_spiketrain_mean_burst_duration, 2)
-        read.theta_power = theta_spike_power
+        read.spiketrain_theta_power = theta_spike_power
+        read.spiketrain_theta_burst = theta_spiketrain_mean_burst_duration
         self.label_alpha_power_output['text'] = round(alpha_spike_power, 2)
         self.label_alpha_burst_output['text'] = round(alpha_spiketrain_mean_burst_duration, 2)
-        read.alpha_power = alpha_spike_power
+        read.spiketrain_alpha_power = alpha_spike_power
+        read.spiketrain_alpha_burst = alpha_spiketrain_mean_burst_duration
         self.label_lowbeta_power_output['text'] = round(low_beta_spike_power, 2)
         self.label_lowbeta_burst_output['text'] = round(low_beta_spiketrain_mean_burst_duration, 2)
-        read.low_beta_power = low_beta_spike_power
+        read.spiketrain_low_beta_power = low_beta_spike_power
+        read.spiketrain_low_beta_burst = low_beta_spiketrain_mean_burst_duration
         self.label_highbeta_power_output['text'] = round(high_beta_spike_power, 2)
         self.label_highbeta_burst_output['text'] = round(high_beta_spiketrain_mean_burst_duration, 2)
-        read.high_beta_power = high_beta_spike_power
+        read.spiketrain_high_beta_power = high_beta_spike_power
+        read.spiketrain_high_beta_burst = high_beta_spiketrain_mean_burst_duration
 
 
     def button_plot_isi_press(self):
@@ -1661,7 +1665,7 @@ class App(GUIStyles):
         # Make it such that it can be called regardless of spike sorting being present.
         fig = spike.isi_plot()
         isi_win = Tk()
-        isi_win.title('Log-Interspike-Interval Histogram')
+        isi_win.title('Inter-spike Intervals')
         isi_canvas = FigureCanvasTkAgg(fig, master=isi_win)
         isi_canvas.get_tk_widget().grid(column=0, row=0, sticky='nesw')
         isi_canvas.draw()
@@ -1679,13 +1683,29 @@ class App(GUIStyles):
 
 
     def button_plot_oscillations_press(self):
-        pass
+        fig = spike.oscillations_plot()
+        isi_win = Tk()
+        isi_win.title('Spiketrain Oscillations')
+        isi_canvas = FigureCanvasTkAgg(fig, master=isi_win)
+        isi_canvas.get_tk_widget().grid(column=0, row=0, sticky='nesw')
+        isi_canvas.draw()
+
+        toolbar_frame = Frame(isi_win)
+        toolbar_frame.grid(column=0, row=1)
+        toolbar = NavigationToolbar2Tk(isi_canvas, toolbar_frame)
+        toolbar.configure(background='white')
+        toolbar._message_label.configure(background='white')
+        for i in toolbar.winfo_children():
+            i.configure(background='white', bd=0)
+
+        self.dynamic_resize(isi_win, 2, 1)
+        isi_win.mainloop()
 
 
     def button_plot_lfp_press(self):
         fig = spike.lfp_plot()
         lfp_win = Tk()
-        lfp_win.title('LFP PSD')
+        lfp_win.title('LFP Oscillations')
         lfp_canvas = FigureCanvasTkAgg(fig, master=lfp_win)
         lfp_canvas.get_tk_widget().grid(column=0, row=0, sticky='nesw')
         lfp_canvas.draw()
@@ -1787,12 +1807,18 @@ class App(GUIStyles):
         read.burst_index = 0
         read.cov = 0
         read.silhouette = 0
-        read.delta_power = 0
-        read.theta_power = 0
-        read.alpha_power = 0
-        read.low_beta_power = 0
-        read.high_beta_power = 0
-        read.gamma_power = 0
+        read.spiketrain_theta_power = 0
+        read.spiketrain_alpha_power = 0
+        read.spiketrain_low_beta_power = 0
+        read.spiketrain_high_beta_power = 0
+        read.spiketrain_theta_burst = 0
+        read.spiketrain_alpha_burst = 0
+        read.spiketrain_low_beta_burst = 0
+        read.spiketrain_high_beta_burst = 0
+        read.lfp_theta_power = 0
+        read.lfp_alpha_power = 0
+        read.lfp_low_beta_power = 0
+        read.lfp_high_beta_power = 0
 
         read.threshold = None
         read.threshold_factor = None

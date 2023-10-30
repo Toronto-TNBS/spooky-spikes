@@ -60,6 +60,15 @@ class SpikeAnalysis:
         self.lfp_high_beta_wave = []
         self.psd_plot_xlim = [0,100]
 
+        self.spike_oscillations_theta_wave = []
+        self.spike_oscillations_alpha_wave = []
+        self.spike_oscillations_low_beta_wave = []
+        self.spike_oscillations_high_beta = []
+        self.spike_oscillations_theta_times = []
+        self.spike_oscillations_alpha_times = []
+        self.spike_oscillations_low_beta_times = []
+        self.spike_oscillations_high_beta_times = []
+
         self.lag_time = 0.5
         self.time_interval = 0.01
         self.frequencies_autocorr = []
@@ -612,7 +621,26 @@ class SpikeAnalysis:
 
         ax.set_ylabel('Density')
         ax.set_xlabel('log(ISI)')
+        ax.set_title('Log-Interspike-Interval Histogram')
         ax.legend(['Gaussian Mixture'])
+
+        return fig
+
+
+    def oscillations_plot(self):
+        fig, ax = plt.subplots(4, 1, sharex=True)
+        ax[0].plot(self.spike_oscillations_theta_times, self.spike_oscillations_theta_wave)
+        ax[1].plot(self.spike_oscillations_alpha_times, self.spike_oscillations_alpha_wave)
+        ax[2].plot(self.spike_oscillations_low_beta_times, self.spike_oscillations_low_beta_wave)
+        ax[3].plot(self.spike_oscillations_high_beta_times, self.spike_oscillations_high_beta_wave)
+        ax[3].set_xlabel('Time (s)')
+        ax[0].set_ylabel('Theta')
+        ax[1].set_ylabel('Alpha')
+        ax[2].set_ylabel('Low Beta')
+        ax[3].set_ylabel('High Beta')
+        ax[0].set_title('Spiketrain Oscillations Waveforms')
+
+        fig.tight_layout()
 
         return fig
 
@@ -626,10 +654,23 @@ class SpikeAnalysis:
         ax4 = fig.add_subplot(gs[2, 1])
         ax5 = fig.add_subplot(gs[3, 1])
 
+        # Fix the time arrays for the LFP waveforms.
         ax1.plot(self.lfp_psd_freqs, self.lfp_psd_power)
-        ax2.plot(np.arange(len(self.lfp_theta_wave)), self.lfp_theta_wave)
-        ax3.plot(np.arange(len(self.lfp_alpha_wave)), self.lfp_alpha_wave)
-        ax4.plot(np.arange(len(self.lfp_low_beta_wave)), self.lfp_low_beta_wave)
-        ax5.plot(np.arange(len(self.lfp_high_beta_wave)), self.lfp_high_beta_wave)
+        ax2.plot(np.arange(len(self.lfp_theta_wave))/self.main_fs, self.lfp_theta_wave)
+        ax3.plot(np.arange(len(self.lfp_alpha_wave))/self.main_fs, self.lfp_alpha_wave)
+        ax4.plot(np.arange(len(self.lfp_low_beta_wave))/self.main_fs, self.lfp_low_beta_wave)
+        ax5.plot(np.arange(len(self.lfp_high_beta_wave))/self.main_fs, self.lfp_high_beta_wave)
+
+        ax1.set_xlabel('Frequency (Hz)')
+        ax1.set_ylabel('Spectral Power')
+        ax1.set_title('Power Spectral Density')
+        ax2.set_ylabel('Theta')
+        ax3.set_ylabel('Alpha')
+        ax4.set_ylabel('Low Beta')
+        ax5.set_ylabel('High Beta')
+        ax5.set_xlabel('Time (s)')
+        ax2.set_title('LFP Waveforms')
+
+        fig.tight_layout()
 
         return fig

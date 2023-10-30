@@ -16,10 +16,18 @@ class ReadSpike:
         self.burst_index = 0
         self.cov = 0
         self.silhouette = 0
-        self.theta_power = 0
-        self.alpha_power = 0
-        self.low_beta_power = 0
-        self.high_beta_power = 0
+        self.spiketrain_theta_power = 0
+        self.spiketrain_alpha_power = 0
+        self.spiketrain_low_beta_power = 0
+        self.spiketrain_high_beta_power = 0
+        self.spiketrain_theta_burst = 0
+        self.spiketrain_alpha_burst = 0
+        self.spiketrain_low_beta_burst = 0
+        self.spiketrain_high_beta_burst = 0
+        self.lfp_theta_power = 0
+        self.lfp_alpha_power = 0
+        self.lfp_low_beta_power = 0
+        self.lfp_high_beta_power = 0
 
         self.threshold = None
         self.threshold_factor = None
@@ -179,18 +187,24 @@ class ReadSpike:
                 'Lowpass': self.lowpass,
                 'Inverted': self.segment_inverted,
                 'Number_Clusters': self.number_clusters,
-                'Lag_Time': self.lag_time,
-                'Time_Interval': self.time_interval,
                 'SNR': self.snr,
                 'Percent_ISI_Violations': self.percent_isi_violations,
                 'Firing_Rate': self.firing_rate,
                 'Burst_Index': self.burst_index,
                 'CoV': self.cov,
                 'Silhouette': self.silhouette,
-                'Theta_Power': self.theta_power,
-                'Alpha_Power': self.alpha_power,
-                'Low_Beta_Power': self.low_beta_power,
-                'High_Beta_Power': self.high_beta_power,
+                'Spiketrain_Theta_Power': self.spiketrain_theta_power,
+                'Spiketrain_Alpha_Power': self.spiketrain_alpha_power,
+                'Spiketrain_Low_Beta_Power': self.spiketrain_low_beta_power,
+                'Spiketrain_High_Beta_Power': self.spiketrain_high_beta_power,
+                'Theta_Mean_Burst_Duration': self.spiketrain_theta_burst,
+                'Alpha_Mean_Burst_Duration': self.spiketrain_alpha_burst,
+                'Low_Beta_Mean_Burst_Duration': self.spiketrain_low_beta_burst,
+                'High_Beta_Mean_Burst_Duration': self.spiketrain_high_beta_burst,
+                'LFP_Theta_Power': self.lfp_theta_power,
+                'LFP_Alpha_Power': self.lfp_alpha_power,
+                'LFP_Low_Beta_Power': self.lfp_low_beta_power,
+                'LFP_High_Beta_Power': self.lfp_high_beta_power
             },
             index=[0]
         )
