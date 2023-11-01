@@ -656,10 +656,11 @@ class SpikeAnalysis:
 
         # Fix the time arrays for the LFP waveforms.
         ax1.plot(self.lfp_psd_freqs, self.lfp_psd_power)
-        ax2.plot(np.arange(len(self.lfp_theta_wave))/self.main_fs, self.lfp_theta_wave)
-        ax3.plot(np.arange(len(self.lfp_alpha_wave))/self.main_fs, self.lfp_alpha_wave)
-        ax4.plot(np.arange(len(self.lfp_low_beta_wave))/self.main_fs, self.lfp_low_beta_wave)
-        ax5.plot(np.arange(len(self.lfp_high_beta_wave))/self.main_fs, self.lfp_high_beta_wave)
+
+        ax2.plot(np.arange(0, self.main_times[-1], self.main_times[-1]/len(self.lfp_theta_wave)), self.lfp_theta_wave)
+        ax3.plot(np.arange(0, self.main_times[-1], self.main_times[-1]/len(self.lfp_alpha_wave)), self.lfp_alpha_wave)
+        ax4.plot(np.arange(0, self.main_times[-1], self.main_times[-1]/len(self.lfp_low_beta_wave)), self.lfp_low_beta_wave)
+        ax5.plot(np.arange(0, self.main_times[-1], self.main_times[-1]/len(self.lfp_high_beta_wave)), self.lfp_high_beta_wave)
 
         ax1.set_xlabel('Frequency (Hz)')
         ax1.set_ylabel('Spectral Power')
