@@ -519,7 +519,7 @@ class App(GUIStyles):
 
         self.label_oscillations = ttk.Label(
             master=self.tab_features,
-            text='Oscillations',
+            text='Spiketrain Oscillations',
             style='right_headers.TLabel',
             background='white'
         )
@@ -1104,9 +1104,7 @@ class App(GUIStyles):
         if colour == None and properties == True:
             ask_save = tkm.askyesno(
                 title='Save Properties',
-                message=f'Edit this message. Threshold: '
-                        f'{round(spike.main_threshold, 2)} V.\n\n'
-                        f'Would you like to save?'
+                message=f'Features will be saved in a CSV file.\n\nWould you like to continue?'
             )
         elif colour == None:
             ask_save = tkm.askyesno(
@@ -1606,7 +1604,7 @@ class App(GUIStyles):
             self.label_highbeta_burst_output['text'] = ''
             return
 
-        events = spike.features_spiketrain_indices / spike.main_fs
+        events = np.array(spike.features_spiketrain_indices) / spike.main_fs
         # --- Spike train power (UNCOMMENT THIS WHEN PROBLEM FIXED)
         print('Kaneoke functions.')
         theta_spike_power = mer.kaneoke_oscillation_power(events, 4, 8, 10e-3, 500e-3)
