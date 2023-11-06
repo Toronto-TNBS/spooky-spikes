@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 import numpy as np
-from scipy.signal import filtfilt, iirfilter, butter, sosfilt, find_peaks, welch, peak_widths
+from scipy.signal import filtfilt, iirfilter, butter, sosfilt, find_peaks, welch, peak_widths, hilbert
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
@@ -12,8 +12,10 @@ from scipy.stats import median_abs_deviation
 import neo
 import heapq as pq
 import warnings
+from spikedata.AnalyzeMER import AnalyzeMER
 
 plt.style.use('ggplot')
+mer = AnalyzeMER()
 
 
 class SpikeAnalysis:
@@ -63,7 +65,7 @@ class SpikeAnalysis:
         self.spike_oscillations_theta_wave = []
         self.spike_oscillations_alpha_wave = []
         self.spike_oscillations_low_beta_wave = []
-        self.spike_oscillations_high_beta = []
+        self.spike_oscillations_high_beta_wave = []
         self.spike_oscillations_theta_times = []
         self.spike_oscillations_alpha_times = []
         self.spike_oscillations_low_beta_times = []
@@ -631,11 +633,98 @@ class SpikeAnalysis:
 
 
     def oscillations_plot(self):
+        burst_theta = np.abs(hilbert(self.spike_oscillations_theta_wave))
+        burst_alpha = np.abs(hilbert(self.spike_oscillations_alpha_wave))
+        burst_low_beta = np.abs(hilbert(self.spike_oscillations_low_beta_wave))
+        burst_high_beta = np.abs(hilbert(self.spike_oscillations_high_beta_wave))
+
+        events = np.array(self.features_spiketrain_indices) / self.main_fs
+        burst_threshold = mer.burst_threshold(events, data_type='spiketrain')
+
         fig, ax = plt.subplots(4, 1, sharex=True)
         ax[0].plot(self.spike_oscillations_theta_times, self.spike_oscillations_theta_wave)
         ax[1].plot(self.spike_oscillations_alpha_times, self.spike_oscillations_alpha_wave)
         ax[2].plot(self.spike_oscillations_low_beta_times, self.spike_oscillations_low_beta_wave)
         ax[3].plot(self.spike_oscillations_high_beta_times, self.spike_oscillations_high_beta_wave)
+
+        ax[0].plot(self.spike_oscillations_theta_times, burst_theta)
+        ax[1].plot(self.spike_oscillations_alpha_times, burst_alpha)
+        ax[2].plot(self.spike_oscillations_low_beta_times, burst_low_beta)
+        ax[3].plot(self.spike_oscillations_high_beta_times, burst_high_beta)
+
+        ax[0].axhline(burst_threshold, color='k')
+        ax[1].axhline(burst_threshold, color='k')
+        ax[2].axhline(burst_threshold, color='k')
+        ax[3].axhline(burst_threshold, color='k')
+
+        above_threshold_theta = burst_theta > burst_threshold
+        cross_indices_theta = np.where(np.diff(above_threshold_theta))[0]
+        if len(cross_indices_theta) > 1:
+            if burst_theta[cross_indices_theta[0] + 1] <= burst_threshold:
+                # If so, remove the first index from cross_indices
+                cross_indices_theta = cross_indices_theta[1:]
+            for start, end in zip(cross_indices_theta[:-1:2], cross_indices_theta[1::2]):
+                duration = self.spike_oscillations_theta_times[end] - self.spike_oscillations_theta_times[
+                    start]  # Calculate the duration of the burst
+                if duration > 0.1:
+                    ax[0].fill_betweenx(
+                        y=[np.min(self.spike_oscillations_theta_wave), np.max(self.spike_oscillations_theta_wave)],
+                        x1=self.spike_oscillations_theta_times[start],
+                        x2=self.spike_oscillations_theta_times[start] + duration,
+                        color='lightsteelblue'
+                    )
+
+        above_threshold_alpha = burst_alpha > burst_threshold
+        cross_indices_alpha = np.where(np.diff(above_threshold_alpha))[0]
+        if len(cross_indices_alpha) > 1:
+            if burst_alpha[cross_indices_alpha[0] + 1] <= burst_threshold:
+                # If so, remove the first index from cross_indices
+                cross_indices_alpha = cross_indices_alpha[1:]
+            for start, end in zip(cross_indices_alpha[:-1:2], cross_indices_alpha[1::2]):
+                duration = self.spike_oscillations_alpha_times[end] - self.spike_oscillations_alpha_times[
+                    start]  # Calculate the duration of the burst
+                if duration > 0.1:
+                    ax[1].fill_betweenx(
+                        y=[np.min(self.spike_oscillations_alpha_wave), np.max(self.spike_oscillations_alpha_wave)],
+                        x1=self.spike_oscillations_alpha_times[start],
+                        x2=self.spike_oscillations_alpha_times[start] + duration,
+                        color='lightsteelblue'
+                    )
+
+        above_threshold_low_beta = burst_low_beta > burst_threshold
+        cross_indices_low_beta = np.where(np.diff(above_threshold_low_beta))[0]
+        if len(cross_indices_low_beta) > 1:
+            if burst_low_beta[cross_indices_low_beta[0] + 1] <= burst_threshold:
+                # If so, remove the first index from cross_indices
+                cross_indices_low_beta = cross_indices_low_beta[1:]
+            for start, end in zip(cross_indices_low_beta[:-1:2], cross_indices_low_beta[1::2]):
+                duration = self.spike_oscillations_low_beta_times[end] - self.spike_oscillations_low_beta_times[
+                    start]  # Calculate the duration of the burst
+                if duration > 0.1:
+                    ax[2].fill_betweenx(
+                        y=[np.min(self.spike_oscillations_low_beta_wave), np.max(self.spike_oscillations_low_beta_wave)],
+                        x1=self.spike_oscillations_low_beta_times[start],
+                        x2=self.spike_oscillations_low_beta_times[start] + duration,
+                        color='lightsteelblue'
+                    )
+
+        above_threshold_high_beta = burst_high_beta > burst_threshold
+        cross_indices_high_beta = np.where(np.diff(above_threshold_high_beta))[0]
+        if len(cross_indices_high_beta) > 1:
+            if burst_high_beta[cross_indices_high_beta[0] + 1] <= burst_threshold:
+                # If so, remove the first index from cross_indices
+                cross_indices_high_beta = cross_indices_high_beta[1:]
+            for start, end in zip(cross_indices_high_beta[:-1:2], cross_indices_high_beta[1::2]):
+                duration = self.spike_oscillations_high_beta_times[end] - self.spike_oscillations_high_beta_times[
+                    start]  # Calculate the duration of the burst
+                if duration > 0.1:
+                    ax[3].fill_betweenx(
+                        y=[np.min(self.spike_oscillations_high_beta_wave), np.max(self.spike_oscillations_high_beta_wave)],
+                        x1=self.spike_oscillations_high_beta_times[start],
+                        x2=self.spike_oscillations_high_beta_times[start] + duration,
+                        color='lightsteelblue'
+                    )
+
         ax[3].set_xlabel('Time (s)')
         ax[0].set_ylabel('Theta')
         ax[1].set_ylabel('Alpha')
