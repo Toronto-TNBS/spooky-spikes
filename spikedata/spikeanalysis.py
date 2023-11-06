@@ -324,7 +324,7 @@ class SpikeAnalysis:
         elif mincutoff == None:
             b, a = iirfilter(4, int(maxcutoff), btype='lowpass', ftype='butter', fs=float(fs))
         elif maxcutoff == None:
-            b, a = iirfilter(4, int(maxcutoff), btype='highpass', ftype='butter', fs=float(fs))
+            b, a = iirfilter(4, int(mincutoff), btype='highpass', ftype='butter', fs=float(fs))
         else:
             b, a = iirfilter(4, [int(mincutoff), int(maxcutoff)], btype='bandpass', ftype='butter', fs=float(fs))
         filt_signal = filtfilt(b, a, wave)
