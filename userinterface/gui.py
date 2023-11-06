@@ -844,8 +844,11 @@ class App(GUIStyles):
 
     def button_file_press(self):
         supported_filetypes = [
+            ('All Files (*)', '*'),
             ('Spike2 Datafile 32-bit (*.smr)', '*.smr'),
-            ('Spike2 Datafile 64-bit (*.smrx)', '*.smrx')
+            ('Spike2 Datafile 64-bit (*.smrx)', '*.smrx'),
+            ('MAT-File (*.mat)', '*.mat'),
+            ('Comma Separated Values (*.csv)', '*.csv')
         ]
         filepath = tkf.askopenfilename(
             title='Open File',
@@ -853,9 +856,10 @@ class App(GUIStyles):
         )
         filename = filepath.split('/')[-1]
         file_ext = filepath.split('.')[-1]
+        read.file_ext = file_ext
         self.label_file['text'] = filename
 
-        if filepath == '' or file_ext != 'smr':
+        if filepath == '' or file_ext not in read.supported_filetypes:
             self.reset_all_parameters()
             read.channel = 0
             read.read_filepath = ''
@@ -873,7 +877,7 @@ class App(GUIStyles):
                     title='File Error',
                     message='No file selected.'
                 )
-            elif file_ext != 'smr':
+            elif file_ext not in read.supported_filetypes:
                 tkm.showerror(
                     title='File Error',
                     message=f'Invalid file extension (*.{file_ext}).'
@@ -883,7 +887,8 @@ class App(GUIStyles):
 
             read.read_filepath = filepath
 
-            self.channels_available = read.get_channel_list()
+            self.channels_available = read.get_channel_list(file_ext)
+            read.available_channels = self.channels_available
             self.dropdown_menu = Menu(tearoff=False)
             for i in self.channels_available:
                 self.dropdown_menu.add_radiobutton(
@@ -893,18 +898,19 @@ class App(GUIStyles):
                     font=self.menu_item_font
                 )
 
-            read.get_lowest_wave_channel()
+            if file_ext in ['smr', 'smrx']:
+                read.get_lowest_wave_channel()
+                # For mat and csv, lowest channel set in get_channel_list()
 
             self.dropdown_channel['menu'] = self.dropdown_menu
             self.dropdown_channel['text'] = f'{self.channels_available[read.channel]}'
-            raw_wave = read.read_smr_waves()
-            spike.main_times = raw_wave[0]
-            spike.main_magnitudes = raw_wave[1]
-            spike.main_fs = raw_wave[2]
+
+            spike.main_magnitudes, spike.main_fs = read.read_wave(read.file_ext)
+            spike.main_times = np.arange(len(spike.main_magnitudes)) / spike.main_fs
 
             self.delete_plot(canvas=self.plot_canvas_main)
-            self.tab_main_plot()
             self.plot_toolbar_main()
+            self.tab_main_plot()
 
             self.entry_threshold_factor['state'] = 'normal'
             self.entry_threshold_factor['style'] = 'TEntry'
@@ -920,11 +926,20 @@ class App(GUIStyles):
         selected_channel = self.dropdown_selection.get()
         self.dropdown_channel['text'] = selected_channel
 
-        read.channel = int(selected_channel.split(' ')[0]) - 1
+        if read.file_ext in ['smr', 'smrx']:
+            read.channel = int(selected_channel.split(' ')[0]) - 1
+        else:
+            # Finds index of selected channel in available channels list.
+            id = int(selected_channel[6:])
+            for i, var in enumerate(read.available_channels):
+                if id == var[6:]:
+                    read.channel = i
+                    break
+
 
         self.reset_all_parameters()
 
-        raw_wave = read.read_smr_waves()
+        raw_wave = read.read_wave(read.file_ext)
         if raw_wave == -1:
             print('Error: the selected channel does not contain any wave data.')
             tkm.showerror(
@@ -932,9 +947,9 @@ class App(GUIStyles):
                 message='The channel you selected contains no wave data.'
             )
         else:
-            spike.main_times = raw_wave[0]
-            spike.main_magnitudes = raw_wave[1]
-            spike.main_fs = raw_wave[2]
+            spike.main_magnitudes = raw_wave[0]
+            spike.main_fs = raw_wave[1]
+            spike.main_times = np.arange(len(spike.main_magnitudes)) / spike.main_fs
 
             self.delete_plot(self.plot_canvas_main)
             self.tab_main_plot()
@@ -954,12 +969,12 @@ class App(GUIStyles):
 
             read.filtering = True
         else:
-            spike.main_magnitudes = read.read_smr_waves()[1]
+            spike.main_magnitudes = read.read_wave(read.file_ext)[0]
             threshold_unfilt = spike.get_main_threshold(magnitudes=spike.main_magnitudes,
                                                         factor=spike.main_threshold_factor)
             spike.main_threshold = threshold_unfilt
             self.label_threshold['text'] = f'Threshold: {round(threshold_unfilt, 2)} V ' \
-                                           f'[Factor: {self.entry_threshold_factor.get()}]'
+                                           f'[Factor: {spike.main_threshold_factor}]'
 
             self.entry_lowpass_cutoff.delete(0, END)
             self.entry_lowpass_cutoff.insert(0, '')

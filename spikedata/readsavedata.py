@@ -2,6 +2,9 @@ from sonpy import lib as sp
 import numpy as np
 import math
 import pandas as pd
+import scipy.io as spio
+import mat73
+
 
 class ReadSpike:
 
@@ -39,11 +42,44 @@ class ReadSpike:
         self.lag_time = 0.5
         self.time_interval = 0.01
 
+        self.supported_filetypes = ['smr', 'smrx', 'mat', 'csv']
+        self.file_ext = None
+        self.available_channels = None
 
 
-    def get_channel_list(self):
-        data = sp.SonFile(sName=self.read_filepath, bReadOnly=True)
-        channel_list = [f'{i + 1} ({str(data.ChannelType(i)).split(".")[-1]})' for i in range(data.MaxChannels())]
+    def get_channel_list(self, ext):
+        if ext == 'smr' or ext == 'smrx':
+            data = sp.SonFile(sName=self.read_filepath, bReadOnly=True)
+            channel_list = [f'{i + 1} ({str(data.ChannelType(i)).split(".")[-1]})' for i in range(data.MaxChannels())]
+
+        elif ext == 'mat':
+            try:
+                data = spio.loadmat(self.read_filepath)
+            except:
+                data = mat73.loadmat(self.read_filepath)
+
+            channel_list = []
+            for var in data.keys():
+                if var[:6] == 'values':
+                    try:
+                        type_test = type(int(var[6:]))
+                    except:
+                        continue
+                    channel_list.append(var)
+            self.channel = 0
+
+        elif ext == 'csv':
+            data = pd.read_csv(self.read_filepath)
+            channel_list = []
+            for var in data.columns:
+                if var[:6] == 'values':
+                    try:
+                        type_test = type(int(var[6:]))
+                    except:
+                        continue
+                    channel_list.append(var)
+            self.channel = 0
+
         return channel_list
 
 
@@ -61,26 +97,14 @@ class ReadSpike:
 
     def read_smr_waves(self):
         file = sp.SonFile(sName=self.read_filepath, bReadOnly=True)
-        # wave_channels = [i for i in range(file.MaxChannels()) if file.ChannelType(i) == sp.DataType.Adc]
-        # for i in range(file.MaxChannels()):
-        #     if file.ChannelType(i) == sp.DataType.RealWave:
-        #         wave_channels.append(i)
-        # if len(wave_channels) == 0:
-        #     print('Error: no wave spikedata found in this file.')
-        #     quit()
-        # if file.ChannelType(self.channel) != sp.DataType.Adc and file.ChannelType(self.channel) != sp.DataType.RealWave:
-        #     print('Error: selected channel does not contain wave spikedata.')
-        #     quit()
-        print(f'Channel read: {self.channel}')
 
         if file.ChannelType(self.channel) == sp.DataType.Adc or file.ChannelType(self.channel) == sp.DataType.RealWave:
             read_max_time = file.ChannelMaxTime(self.channel) * file.GetTimeBase()
 
             period = file.ChannelDivide(self.channel) * file.GetTimeBase()
             num_points = math.floor(read_max_time / period)
-            fs = 1/period
+            fs = 1 / period
 
-            time_points = np.arange(0, num_points * period, period)
             wave = file.ReadFloats(self.channel, num_points, 0)
 
             if len(wave) == 0:
@@ -88,9 +112,43 @@ class ReadSpike:
             elif len(wave) != num_points:
                 print(f'Mismatched number of points. Expected {num_points} points, but got {len(wave)} instead.')
 
-            return np.array([time_points, wave, fs])
+            return wave, fs
         else:
             return -1
+
+
+    def read_mat_wave(self):
+        try:
+            data = spio.loadmat(self.read_filepath)
+        except:
+            data = mat73.loadmat(self.read_filepath)
+        var = self.available_channels[self.channel]
+        id = var[6:]
+        wave = np.ndarray.flatten(data[var])
+        fs = float(np.ndarray.flatten(data['fs' + id])[0])
+        return wave, fs
+
+
+    def read_csv_wave(self):
+        data = pd.read_csv(self.read_filepath)
+        var = self.available_channels[self.channel]
+        id = var[6:]
+        wave = data[var].values
+        fs = float(data['fs' + id][0])
+        return wave, fs
+
+
+    def read_wave(self, ext):
+        if ext == 'smr' or ext == 'smrx':
+            wave_data = self.read_smr_waves()
+        elif ext == 'mat':
+            wave_data = self.read_mat_wave()
+        elif ext == 'csv':
+            wave_data = self.read_csv_wave()
+
+        if wave_data == -1:
+            return -1
+        return wave_data[0], wave_data[1]
 
 
     def save_segment(self, events):
@@ -174,7 +232,6 @@ class ReadSpike:
         del reload
 
         return status
-
 
     def save_properties(self):
         properties = pd.DataFrame(
