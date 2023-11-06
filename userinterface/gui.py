@@ -856,7 +856,7 @@ class App(GUIStyles):
         )
         filename = filepath.split('/')[-1]
         file_ext = filepath.split('.')[-1]
-        read.file_ext = file_ext
+        read.file_read_ext = file_ext
         self.label_file['text'] = filename
 
         if filepath == '' or file_ext not in read.supported_filetypes:
@@ -905,7 +905,7 @@ class App(GUIStyles):
             self.dropdown_channel['menu'] = self.dropdown_menu
             self.dropdown_channel['text'] = f'{self.channels_available[read.channel]}'
 
-            spike.main_magnitudes, spike.main_fs = read.read_wave(read.file_ext)
+            spike.main_magnitudes, spike.main_fs = read.read_wave(read.file_read_ext)
             spike.main_times = np.arange(len(spike.main_magnitudes)) / spike.main_fs
 
             self.delete_plot(canvas=self.plot_canvas_main)
@@ -926,7 +926,7 @@ class App(GUIStyles):
         selected_channel = self.dropdown_selection.get()
         self.dropdown_channel['text'] = selected_channel
 
-        if read.file_ext in ['smr', 'smrx']:
+        if read.file_read_ext in ['smr', 'smrx']:
             read.channel = int(selected_channel.split(' ')[0]) - 1
         else:
             # Finds index of selected channel in available channels list.
@@ -939,7 +939,7 @@ class App(GUIStyles):
 
         self.reset_all_parameters()
 
-        raw_wave = read.read_wave(read.file_ext)
+        raw_wave = read.read_wave(read.file_read_ext)
         if raw_wave == -1:
             print('Error: the selected channel does not contain any wave data.')
             tkm.showerror(
@@ -969,7 +969,7 @@ class App(GUIStyles):
 
             read.filtering = True
         else:
-            spike.main_magnitudes = read.read_wave(read.file_ext)[0]
+            spike.main_magnitudes = read.read_wave(read.file_read_ext)[0]
             threshold_unfilt = spike.get_main_threshold(magnitudes=spike.main_magnitudes,
                                                         factor=spike.main_threshold_factor)
             spike.main_threshold = threshold_unfilt
@@ -1143,7 +1143,8 @@ class App(GUIStyles):
                 ]
             else:
                 supported_filetypes = [
-                    ('Spike2 Datafile 32-bit (*.smr)', '*.smr')
+                    ('Spike2 Datafile 32-bit (*.smr)', '*.smr'),
+                    ('MAT-File (*.mat)', '*.mat')
                 ]
             filetype_choice = StringVar()
             save_filepath = tkf.asksaveasfilename(
@@ -1164,6 +1165,10 @@ class App(GUIStyles):
                 pass
             elif not save_filepath.endswith('.csv') and filetype_choice.get() == 'Comma Separated Values (*.csv)':
                 save_filepath += '.csv'
+            if save_filepath.endswith('.mat') and filetype_choice.get() == 'MAT-File (*.mat)':
+                pass
+            elif not save_filepath.endswith('.mat') and filetype_choice.get() == 'MAT-File (*.mat)':
+                save_filepath += '.mat'
 
             return save_filepath
 
@@ -1201,7 +1206,8 @@ class App(GUIStyles):
                 )
                 save = -1
             else:
-                save = read.save_segment(events=spike.main_event_peak_times)
+                file_ext = read.save_filepath.split('.')[-1]
+                save = read.save_segment(events=spike.main_event_peak_times, ext=file_ext)
         print(f'Save status code: {save}')
 
 
@@ -1249,7 +1255,8 @@ class App(GUIStyles):
                 )
                 save = -1
             else:
-                save = read.save_segment(events=spike.selected_cluster_peaks)
+                file_ext = read.save_filepath.split('.')[-1]
+                save = read.save_segment(events=spike.selected_cluster_peaks, ext=file_ext)
         print(f'Save status code: {save}')
 
 
@@ -1275,7 +1282,7 @@ class App(GUIStyles):
             read.lowpass = float(maxcutoff)
             self.label_set_cutoffs['text'] = f'HP: {read.highpass} Hz\nLP: {read.lowpass} Hz'
 
-        spike.main_magnitudes = read.read_wave(read.file_ext)[0]    # Need to reset signal to filter again.
+        spike.main_magnitudes = read.read_wave(read.file_read_ext)[0]    # Need to reset signal to filter again.
         filt_wave = spike.filter_wave(wave=spike.main_magnitudes,
                                       mincutoff=read.highpass, maxcutoff=read.lowpass, fs=spike.main_fs)
         spike.main_magnitudes = filt_wave

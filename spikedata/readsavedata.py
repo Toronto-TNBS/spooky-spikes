@@ -43,7 +43,7 @@ class ReadSpike:
         self.time_interval = 0.01
 
         self.supported_filetypes = ['smr', 'smrx', 'mat', 'csv']
-        self.file_ext = None
+        self.file_read_ext = None
         self.available_channels = None
 
 
@@ -151,38 +151,20 @@ class ReadSpike:
         return wave_data[0], wave_data[1]
 
 
-    def save_segment(self, events):
-        file = sp.SonFile(sName=self.read_filepath, bReadOnly=True)
-
-        read_max_time = file.ChannelMaxTime(self.channel) * file.GetTimeBase()
-
-        period = file.ChannelDivide(self.channel) * file.GetTimeBase()
-        num_points = math.floor(read_max_time / period)
-
-        time_points = np.arange(0, num_points * period, period)
-        wave = file.ReadInts(self.channel, num_points, 0)
-
-        if len(wave) == 0:
-            print('There was no data read.')
-            quit()
-        elif len(wave) != num_points:
-            print(f'Mismatched number of points. Expected {num_points} points, but got {len(wave)} instead.')
-            quit()
+    def save_smr_segment(self, events, wave, fs):
+        wave_time_base = 5 * 10 ** -6    # Subject to change.
+        wave_sample_ticks = int(1 / (fs * wave_time_base))
 
         filename = self.save_filepath
         new = sp.SonFile(filename)
 
-        wave_offset = file.GetChannelOffset(self.channel)
-        wave_scale = file.GetChannelScale(self.channel)
-        wave_time_base = file.GetTimeBase()
-        wave_Y_range = file.GetChannelYRange(self.channel)
-        wave_Y_low = wave_Y_range[0]
-        wave_Y_high = wave_Y_range[1]
-        wave_units = file.GetChannelUnits(self.channel)
-        wave_title = file.GetChannelTitle(self.channel)
-        wave_channel_type = file.ChannelType(self.channel)
-        wave_sample_ticks = file.ChannelDivide(self.channel)
-        wave_Fs = 1 / period
+        wave_offset = 0
+        wave_scale = 1
+        wave_Y_low = -5
+        wave_Y_high = 5
+        wave_units = 'V'
+        wave_title = 'Waveform'
+        wave_Fs = fs
         time_start = 0
 
         new.SetTimeBase(wave_time_base)
@@ -209,7 +191,8 @@ class ReadSpike:
         reload = sp.SonFile(filename, False)
         if self.segment_inverted:
             wave = [-i for i in wave]
-        write_wave = reload.WriteInts(new_wave_channel, wave, time_start)
+        scaled_wave = np.array(6553.6 * wave, dtype=int)
+        write_wave = reload.WriteInts(new_wave_channel, scaled_wave, time_start)
 
         if write_wave < 0:
             print(f'Error code: {write_wave}')
@@ -232,6 +215,25 @@ class ReadSpike:
         del reload
 
         return status
+
+
+    def save_mat_segment(self, events, signal, fs):
+        try:
+            variables = {'values': signal, 'peak_times': events, 'fs': fs}
+            spio.savemat(self.save_filepath, variables)
+            return 0
+        except:
+            return -1
+
+
+    def save_segment(self, events, ext):
+        signal, fs = self.read_wave(self.file_read_ext)
+        if ext == 'smr':
+            save = self.save_smr_segment(events, signal, fs)
+        elif ext == 'mat':
+            save = self.save_mat_segment(events, signal, fs)
+        return save
+
 
     def save_properties(self):
         properties = pd.DataFrame(
