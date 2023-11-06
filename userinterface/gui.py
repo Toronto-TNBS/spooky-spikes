@@ -24,7 +24,7 @@ class App(GUIStyles):
         super().__init__()
 
 
-        self.title('Spooky Spikes Dashboard')
+        self.title('Spooky Spikes')
 
         img = base64_image.logo
         img = base64.b64decode(img)
@@ -1089,30 +1089,30 @@ class App(GUIStyles):
             read.segment_inverted = True
             # spike.main_magnitudes *= -1
             spike.main_threshold *= - 1
-
-            self.update_spikesorting_parameters()
-            self.delete_plot(self.plot_canvas_spikesorting)
-            self.tab_spikesorting_plot()
-            self.plot_toolbar_spikesorting()
-
-            self.delete_plot(self.plot_canvas_main)
-            self.tab_main_plot()
-            self.plot_toolbar_main()
-
         else:
             spike.segment_inverted = False
             read.segment_inverted = False
             # spike.main_magnitudes *= -1
             spike.main_threshold *= -1
 
-            self.update_spikesorting_parameters()
-            self.delete_plot(self.plot_canvas_spikesorting)
-            self.tab_spikesorting_plot()
-            self.plot_toolbar_spikesorting()
+        # self.update_spikesorting_parameters()
+        # self.delete_plot(self.plot_canvas_spikesorting)
+        # self.tab_spikesorting_plot()
+        # self.plot_toolbar_spikesorting()
+        if self.check_spikesorting_status.get() == 1:
+            self.check_spikesorting.invoke()  # Turn off spike sorting if already ON.
+        # Update spike peaks with threshold-crossing.
+        events = spike.get_event_peaks(magnitudes=spike.main_magnitudes,
+                                       times=spike.main_times,
+                                       threshold=spike.main_threshold)
+        spike.features_spiketrain_indices = events[2]
 
-            self.delete_plot(self.plot_canvas_main)
-            self.tab_main_plot()
-            self.plot_toolbar_main()
+        self.delete_plot(self.plot_canvas_main)
+        self.tab_main_plot()
+        self.plot_toolbar_main()
+
+        self.update_basic_properties()
+        self.update_properties()
 
 
     def ask_save_filepath(self, colour=None, properties=False):
