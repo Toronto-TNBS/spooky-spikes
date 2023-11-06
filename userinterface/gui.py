@@ -1254,22 +1254,36 @@ class App(GUIStyles):
 
 
     def button_set_cutoffs_press(self):
-        print(f'Highpass cut-off: {self.entry_highpass_cutoff.get()}')
-        print(f'Lowpass cut-off: {self.entry_lowpass_cutoff.get()}')
         mincutoff = self.entry_highpass_cutoff.get()
         maxcutoff = self.entry_lowpass_cutoff.get()
-        self.label_set_cutoffs['text'] = f'HP: {round(float(mincutoff), 2)} Hz\n' \
-                                         f'LP: {round(float(maxcutoff), 2)} Hz'
+        print(f'Highpass cut-off: {mincutoff}')
+        print(f'Lowpass cut-off: {maxcutoff}')
+        if mincutoff == '' and maxcutoff == '':
+            read.highpass = None
+            read.lowpass = None
+            self.label_set_cutoffs['text'] = 'No cutoffs.'
+        elif maxcutoff == '':
+            read.highpass = float(mincutoff)
+            read.lowpass = None
+            self.label_set_cutoffs['text'] = f'HP: {read.highpass} Hz\nLP: {read.lowpass}'
+        elif mincutoff == '':
+            read.highpass = None
+            read.lowpass = float(maxcutoff)
+            self.label_set_cutoffs['text'] = f'HP: {read.highpass}\nLP: {read.lowpass} Hz'
+        else:
+            read.highpass = float(mincutoff)
+            read.lowpass = float(maxcutoff)
+            self.label_set_cutoffs['text'] = f'HP: {read.highpass} Hz\nLP: {read.lowpass} Hz'
+
+        spike.main_magnitudes = read.read_wave(read.file_ext)[0]    # Need to reset signal to filter again.
         filt_wave = spike.filter_wave(wave=spike.main_magnitudes,
-                                      mincutoff=mincutoff, maxcutoff=maxcutoff, fs=spike.main_fs)
+                                      mincutoff=read.highpass, maxcutoff=read.lowpass, fs=spike.main_fs)
         spike.main_magnitudes = filt_wave
 
         threshold = spike.get_main_threshold(magnitudes=spike.main_magnitudes,
                                              factor=spike.main_threshold_factor)
         spike.main_threshold = threshold
         read.threshold = threshold
-        read.highpass = float(mincutoff)
-        read.lowpass = float(maxcutoff)
 
         if spike.num_threshold_sets == 0:
             self.entry_threshold_factor.delete(0, END)

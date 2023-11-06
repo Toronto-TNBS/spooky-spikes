@@ -319,13 +319,16 @@ class SpikeAnalysis:
 
 
     def filter_wave(self, wave, mincutoff, maxcutoff, fs):
-        b, a = iirfilter(4, [int(mincutoff), int(maxcutoff)], btype='bandpass', ftype='butter', fs=float(fs))
-        filt_signal = filtfilt(b, a, np.array(wave))
+        if mincutoff == None and maxcutoff == None:
+            return wave
+        elif mincutoff == None:
+            b, a = iirfilter(4, int(maxcutoff), btype='lowpass', ftype='butter', fs=float(fs))
+        elif maxcutoff == None:
+            b, a = iirfilter(4, int(maxcutoff), btype='highpass', ftype='butter', fs=float(fs))
+        else:
+            b, a = iirfilter(4, [int(mincutoff), int(maxcutoff)], btype='bandpass', ftype='butter', fs=float(fs))
+        filt_signal = filtfilt(b, a, wave)
         return np.array(filt_signal)
-
-        # sos = butter(4, [int(mincutoff), int(maxcutoff)], 'bp', fs=float(fs), output='sos')
-        # filt_data = np.array(sosfilt(sos, np.array(wave)))
-        # return np.array(filt_data)
 
 
     def get_main_threshold(self, magnitudes, factor):
