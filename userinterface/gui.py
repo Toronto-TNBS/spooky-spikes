@@ -1559,9 +1559,10 @@ class App(GUIStyles):
 
 
     def update_lfp_properties(self, signal, fs):
-        fs_lfp = 250
+        fs_lfp = spike.fs_lfp
         raw_data_lfp = mer.get_LFP_data(signal, fs, fs_lfp)
         raw_data_lfp = (raw_data_lfp - np.mean(raw_data_lfp)) / np.std(raw_data_lfp)
+        spike.raw_lfp_wave = raw_data_lfp
         spike.lfp_theta_wave, read.lfp_theta_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 4, 8)
         spike.lfp_alpha_wave, read.lfp_alpha_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 8, 12)
         spike.lfp_low_beta_wave, read.lfp_low_beta_power = mer.get_LFP_power(raw_data_lfp, fs_lfp, 12, 21)

@@ -60,7 +60,9 @@ class SpikeAnalysis:
         self.lfp_alpha_wave = []
         self.lfp_low_beta_wave = []
         self.lfp_high_beta_wave = []
+        self.raw_lfp_wave = []
         self.psd_plot_xlim = [0,100]
+        self.fs_lfp = 250
 
         self.spike_oscillations_theta_wave = []
         self.spike_oscillations_alpha_wave = []
@@ -641,7 +643,7 @@ class SpikeAnalysis:
         events = np.array(self.features_spiketrain_indices) / self.main_fs
         burst_threshold = mer.burst_threshold(events, data_type='spiketrain')
 
-        fig, ax = plt.subplots(4, 1, sharex=True)
+        fig, ax = plt.subplots(4, 1, sharex=True, sharey=True)
         ax[0].plot(self.spike_oscillations_theta_times, self.spike_oscillations_theta_wave)
         ax[1].plot(self.spike_oscillations_alpha_times, self.spike_oscillations_alpha_wave)
         ax[2].plot(self.spike_oscillations_low_beta_times, self.spike_oscillations_low_beta_wave)
@@ -738,6 +740,18 @@ class SpikeAnalysis:
 
 
     def lfp_plot(self):
+        burst_theta = np.abs(hilbert(self.lfp_theta_wave))
+        burst_alpha = np.abs(hilbert(self.lfp_alpha_wave))
+        burst_low_beta = np.abs(hilbert(self.lfp_low_beta_wave))
+        burst_high_beta = np.abs(hilbert(self.lfp_high_beta_wave))
+
+        burst_theta_times = np.arange(len(self.lfp_theta_wave)) / (len(self.lfp_theta_wave) / self.main_times[-1])
+        burst_alpha_times = np.arange(len(self.lfp_alpha_wave)) / (len(self.lfp_alpha_wave) / self.main_times[-1])
+        burst_low_beta_times = np.arange(len(self.lfp_low_beta_wave)) / (len(self.lfp_low_beta_wave) / self.main_times[-1])
+        burst_high_beta_times = np.arange(len(self.lfp_high_beta_wave)) / (len(self.lfp_high_beta_wave) / self.main_times[-1])
+
+        burst_threshold = mer.burst_threshold(self.raw_lfp_wave, data_type='lfp', fs_lfp=self.fs_lfp)
+
         fig = plt.figure()
         gs = fig.add_gridspec(4, 2)
         ax1 = fig.add_subplot(gs[:, 0])
@@ -749,10 +763,90 @@ class SpikeAnalysis:
         # Fix the time arrays for the LFP waveforms.
         ax1.plot(self.lfp_psd_freqs, self.lfp_psd_power)
 
-        ax2.plot(np.arange(0, self.main_times[-1], self.main_times[-1]/len(self.lfp_theta_wave)), self.lfp_theta_wave)
-        ax3.plot(np.arange(0, self.main_times[-1], self.main_times[-1]/len(self.lfp_alpha_wave)), self.lfp_alpha_wave)
-        ax4.plot(np.arange(0, self.main_times[-1], self.main_times[-1]/len(self.lfp_low_beta_wave)), self.lfp_low_beta_wave)
-        ax5.plot(np.arange(0, self.main_times[-1], self.main_times[-1]/len(self.lfp_high_beta_wave)), self.lfp_high_beta_wave)
+        ax2.plot(burst_theta_times, self.lfp_theta_wave)
+        ax3.plot(burst_alpha_times, self.lfp_alpha_wave)
+        ax4.plot(burst_low_beta_times, self.lfp_low_beta_wave)
+        ax5.plot(burst_high_beta_times, self.lfp_high_beta_wave)
+
+        ax2.plot(burst_theta_times, burst_theta)
+        ax3.plot(burst_alpha_times, burst_alpha)
+        ax4.plot(burst_low_beta_times, burst_low_beta)
+        ax5.plot(burst_high_beta_times, burst_high_beta)
+
+        ax2.axhline(burst_threshold, color='k')
+        ax3.axhline(burst_threshold, color='k')
+        ax4.axhline(burst_threshold, color='k')
+        ax5.axhline(burst_threshold, color='k')
+
+        above_threshold_theta = burst_theta > burst_threshold
+        cross_indices_theta = np.where(np.diff(above_threshold_theta))[0]
+        if len(cross_indices_theta) > 1:
+            if burst_theta[cross_indices_theta[0] + 1] <= burst_threshold:
+                # If so, remove the first index from cross_indices
+                cross_indices_theta = cross_indices_theta[1:]
+            for start, end in zip(cross_indices_theta[:-1:2], cross_indices_theta[1::2]):
+                duration = burst_theta_times[end] - burst_theta_times[
+                    start]  # Calculate the duration of the burst
+                if duration > 0.1:
+                    ax2.fill_betweenx(
+                        y=[np.min(self.lfp_theta_wave), np.max(self.lfp_theta_wave)],
+                        x1=burst_theta_times[start],
+                        x2=burst_theta_times[start] + duration,
+                        color='lightsteelblue'
+                    )
+
+        above_threshold_alpha = burst_alpha > burst_threshold
+        cross_indices_alpha = np.where(np.diff(above_threshold_alpha))[0]
+        if len(cross_indices_alpha) > 1:
+            if burst_alpha[cross_indices_alpha[0] + 1] <= burst_threshold:
+                # If so, remove the first index from cross_indices
+                cross_indices_alpha = cross_indices_alpha[1:]
+            for start, end in zip(cross_indices_alpha[:-1:2], cross_indices_alpha[1::2]):
+                duration = burst_alpha_times[end] - burst_alpha_times[
+                    start]  # Calculate the duration of the burst
+                if duration > 0.1:
+                    ax3.fill_betweenx(
+                        y=[np.min(self.lfp_alpha_wave), np.max(self.lfp_alpha_wave)],
+                        x1=burst_alpha_times[start],
+                        x2=burst_alpha_times[start] + duration,
+                        color='lightsteelblue'
+                    )
+
+        above_threshold_low_beta = burst_low_beta > burst_threshold
+        cross_indices_low_beta = np.where(np.diff(above_threshold_low_beta))[0]
+        if len(cross_indices_low_beta) > 1:
+            if burst_low_beta[cross_indices_low_beta[0] + 1] <= burst_threshold:
+                # If so, remove the first index from cross_indices
+                cross_indices_low_beta = cross_indices_low_beta[1:]
+            for start, end in zip(cross_indices_low_beta[:-1:2], cross_indices_low_beta[1::2]):
+                duration = burst_low_beta_times[end] - burst_low_beta_times[
+                    start]  # Calculate the duration of the burst
+                if duration > 0.1:
+                    ax4.fill_betweenx(
+                        y=[np.min(self.lfp_low_beta_wave),
+                           np.max(self.lfp_low_beta_wave)],
+                        x1=burst_low_beta_times[start],
+                        x2=burst_low_beta_times[start] + duration,
+                        color='lightsteelblue'
+                    )
+
+        above_threshold_high_beta = burst_high_beta > burst_threshold
+        cross_indices_high_beta = np.where(np.diff(above_threshold_high_beta))[0]
+        if len(cross_indices_high_beta) > 1:
+            if burst_high_beta[cross_indices_high_beta[0] + 1] <= burst_threshold:
+                # If so, remove the first index from cross_indices
+                cross_indices_high_beta = cross_indices_high_beta[1:]
+            for start, end in zip(cross_indices_high_beta[:-1:2], cross_indices_high_beta[1::2]):
+                duration = burst_high_beta_times[end] - burst_high_beta_times[
+                    start]  # Calculate the duration of the burst
+                if duration > 0.1:
+                    ax5.fill_betweenx(
+                        y=[np.min(self.lfp_high_beta_wave),
+                           np.max(self.lfp_high_beta_wave)],
+                        x1=burst_high_beta_times[start],
+                        x2=burst_high_beta_times[start] + duration,
+                        color='lightsteelblue'
+                    )
 
         ax1.set_xlabel('Frequency (Hz)')
         ax1.set_ylabel('Spectral Power')
