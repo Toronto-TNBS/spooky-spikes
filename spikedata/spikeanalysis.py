@@ -908,11 +908,7 @@ class SpikeAnalysis:
         ax1.set_xlim([0, 0.5])
         for ax in [ax2, ax3, ax4, ax5]:
             ax.set_ylim([0, 1.5])
-
-        ax2.set_xlim([freqs_theta[0], freqs_theta[-1]])
-        ax3.set_xlim([freqs_alpha[0], freqs_alpha[-1]])
-        ax4.set_xlim([freqs_low_beta[0], freqs_low_beta[-1]])
-        ax5.set_xlim([freqs_high_beta[0], freqs_high_beta[-1]])
+            ax.set_xlim([0, 30])
 
         ax1.set_xlabel('Lag time (s)')
         ax1.set_title('Autocorrelation')
