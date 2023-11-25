@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spooky Spikes</title>
+
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
+<body>
+
+<div class="header">
+    <div class="header-item header-image"><img width="100%" src="./tnbs_logo.png"></div>
+    <div class="header-item header-text"><a class="header-link" href="https://torontotnbs.com/" target="_blank">The Lab</a></div>
+    <div class="header-item header-text"><a class="header-link" href="https://github.com/Toronto-TNBS" target="_blank">Our GitHub</a></div>
+</div>
+
+<div class="title">
+    <h1 class="title-main">Spooky Spikes</h1>
+    <h2 class="title-sub">Instructions and Documentation</h2>
+    <p class="title-info">
+        Developed by: Luka Zivkovic, and Srdjan Sumarac<br><br>
+
+        Translational Neurophysiology and Brain Stimulation Lab<br>
+        University of Toronto<br>
+        University Health Network<br>
+    </p>
+</div>
+
+<div class="intro">
+    <h1 class="header-section">Table of Contents</h1>
+    <ul class="table-of-contents">
+        <li class="toc-item"><a class="toc-link" href="#one">1. Installation and Launch</a></li>
+        <li class="toc-item"><a class="toc-link" href="#two">2. Functionality</a></li>
+        <ul class="table-of-contents">
+            <li class="toc-item"><a class="toc-link" href="#two-one">2.1. Importing Data</a></li>
+            <li class="toc-item"><a class="toc-link" href="#two-two">2.2. Signal Preparation and Visualization</a></li>
+            <ul class="table-of-contents">
+                <li class="toc-item"><a class="toc-link" href="#two-two-one">2.2.1. Filtering</a></li>
+                <li class="toc-item"><a class="toc-link" href="#two-two-two">2.2.2. Threshold Selection</a></li>
+                <li class="toc-item"><a class="toc-link" href="#two-two-three">2.2.3. Threshold Inversion</a></li>
+                <li class="toc-item"><a class="toc-link" href="#two-two-four">2.2.4. Signal Visualization</a></li>
+            </ul>
+            <li class="toc-item"><a class="toc-link" href="#two-three">2.3. Spike Sorting</a></li>
+            <li class="toc-item"><a class="toc-link" href="#two-four">2.4. Results of Analysis</a></li>
+            <ul class="table-of-contents">
+                <li class="toc-item"><a class="toc-link" href="#two-four-one">2.4.1. Numerical Displays</a></li>
+                <li class="toc-item"><a class="toc-link" href="#two-four-two">2.4.2. Figures</a></li>
+            </ul>
+            <li class="toc-item"><a class="toc-link" href="#two-five">2.5. Exporting Data</a></li>
+        </ul>
+    </ul>
+</div>
+
+<hr>
+
+<div class="section" id="one">
+    <p class="pp-text">
+        Spooky Spikes is a Python-based analysis tool for extracting features from electrophysiological data obtained
+        through microelectrode recordings. The following documentation outlines important points of instruction pertaining
+        to the tool's installation and functionality.
+    </p>
+    <h1 class="header-section">1. Installation and Launch</h1>
+    <p class="pp-text">
+        For the installation and launch of the Spooky Spikes analysis tool, please follow the steps enumerated below.
+    </p>
+    <ol class="install-list">
+        <li>Navigate to the corresponding <a class="repo-link" href="https://github.com/Toronto-TNBS/spooky-spikes/releases" target="_blank">Releases page</a>
+            within the application's <a class="repo-link" href="https://github.com/Toronto-TNBS/spooky-spikes" target="_blank">GitHub repository</a>.</li>
+        <li>Download and run the latest Spooky Spikes installer application.</li>
+        <li>Follow the instructions on the Spooky Spikes installer and complete all the required steps.</li>
+        <li>Navigate to and click on the executable file named "Spooky Spikes" within the downloaded program folder.</li>
+    </ol>
+    <p class="pp-text">
+        You may create a shortcut targeting this final executable file to be displayed on your Desktop. The entire program
+        folder may also be moved to any location. However, please ensure all files installed remain within the program folder.
+        Otherwise, the application will not run.
+    </p>
+</div>
+
+<div class="section" id="two">
+    <h1 class="header-section">2. Functionality</h1>
+    <div class="sub-section" id="two-one">
+        <h2 class="header-sub-section">2.1. Importing Data</h2>
+        <p class="pp-text">
+            Electrophysiological signals can be imported in the “Source Data” section of the main panel
+            (<a class="repo-link" href="#figure-1">Figure 1</a>). Spooky Spikes supports importing data from Spike2 datafiles
+            (*.smr, *.smrx), comma-separated values format (CSV; *.csv), and MAT-Files (*.mat). For file requirements
+            pertaining to each file extension, please refer to Table 1.
+        </p>
+        <div class="table-container">
+            <table class="table" id="table-1">
+                <tr class="table-row">
+                    <th class="table-header">Filetype</th>
+                    <th class="table-header">Requirements</th>
+                </tr>
+                <tr class="table-row">
+                    <td class="table-cell filetype">Spike2 (*.smr, *.smrx)</td>
+                    <td class="table-cell">
+                        <ul><li>At least one non-empty channel of type Adc/Waveform or RealWave.</li></ul>
+                    </td>
+                </tr>
+                <tr class="table-row">
+                    <td class="table-cell filetype">MATLAB (*.mat)</td>
+                    <td class="table-cell"><ul>
+                        <li>Variables containing signal arrays should be named “values#”, where “#” is a unique integer signal ID
+                            for each array (e.g. values1, values2, …).</li>
+                        <li>Each array variable should have an additional corresponding sampling frequency variable using the same
+                            naming convention “fs#” (e.g. fs1, fs2, …).</li>
+                        <li>All variables not following the naming convention defined above will be ignored.</li>
+                    </ul></td>
+                </tr>
+                <tr class="table-row">
+                    <td class="table-cell filetype">Comma Separated Values (*.csv)</td>
+                    <td class="table-cell"><ul>
+                        <li>Columns containing signal arrays should be named “values#”, where “#” is a unique integer signal ID
+                            for each array (e.g. values1, values2, …).</li>
+                        <li>Each array column should have an additional corresponding sampling frequency column using the same
+                            naming convention “fs#” (e.g. fs1, fs2, …).</li>
+                        <li>All columns not following the naming convention defined above will be ignored.</li>
+                    </ul></td>
+                </tr>
+            </table>
+            <p class="table-caption">
+                <b>Table 1:</b> the supported filetypes require specific internal structuring in order to be correctly
+                interpreted by Spooky Spikes. This tables outlines file requirements for Spike2, CSV, and MAT-File
+                formats.
+            </p>
+        </div>
+        <p class="pp-text">
+            After importing one of the supported filetypes, you will be able to select the signal contained within the
+            file using the dropdown menu in the “Source Channel” section of the main panel on the left side of the
+            dashboard (<a class="repo-link" href="#figure-1">Figure 1</a>). This menu will appear differently depending
+            on the filetype selected. However, upon importing a file, the first signal found will be selected by
+            default and displayed in the main tab.
+        </p>
+        <figure class="figure" id="figure-1">
+            <img class="figure-img-1" src="figures/docs_fig1.png">
+            <figcaption class="figure-cap-1">
+                <b>Figure 1:</b> initial state of the Spooky Spikes dashboard upon initial launch, outlining the
+                general display and structure of the application.
+            </figcaption>
+        </figure>
+    </div>
+    <div class="sub-section" id="two-two">
+        <h2 class="header-sub-section">2.2. Signal Preparation and Visualization</h2>
+        <p class="pp-text">
+            This section will introduce various preparatory steps available on the “Main” tab and left panel, which
+            are to be taken before all signal features can be computed and displayed. These include filtering, peak
+            threshold selection, threshold inversion, and signal visualization.
+        </p>
+        <div class="sub-sub-section" id="two-two-one">
+            <h3 class="header-sub-sub-section">2.2.1. Filtering</h3>
+            <p class="pp-text">
+                By default, the filtering feature is disabled. To enable it, select the “Filtering” checkbox on the
+                left panel in the “Parameters” section (<a class="repo-link" href="#figure-1">Figure 1</a>). This will
+                allow the user to enter high-pass and low-pass frequency cutoffs for a fourth-order Butterworth filter
+                that is applied to the imported signal. To utilize the frequency cutoffs for the filter, enter them
+                into the corresponding widgets and press the “Set” button on the “Main” tab within the “Signal
+                filtering” section. The signal will be updated on the main plot immediately upon setting cutoff
+                frequencies. Please see <a class="repo-link" href="#figure-2">Figure 2</a> for an example of setting
+                frequency cutoffs in the correct dashboard sections.
+            </p>
+            <p class="pp-text">
+                If the user enters both high-pass and low-pass cutoffs, a bandpass filter design is applied. If only
+                one of either a high-pass or low-pass cutoff is set, then a high-pass or low-pass filter design is
+                applied, respectively. To disapply filtering and retain the raw data, users can either uncheck the
+                “Filtering” checkbox, or clear the frequency cutoff entries, and press the “Set” button alongside empty
+                widget boxes.
+            </p>
+        </div>
+        <div class="sub-sub-section" id="two-two-two">
+            <h3 class="header-sub-sub-section">2.2.2. Threshold Selection</h3>
+            <p class="pp-text">
+                In order for various spike-dependent features to be computed, a threshold-crossing method is first
+                applied to detect peaks of action potentials within the electrophysiological data. Within the
+                “Threshold” section of the “Main” tab, the user can enter a scaling factor that is applied to the
+                median absolute deviation (MAD) of the data. Press “Set” within the same section to apply the factor
+                and calculate the threshold (<a class="repo-link" href="#figure-2">Figure 2</a>). Spike peaks will be
+                computed immediately and will be available for visualization. If no threshold is set, features
+                requiring a spike-train will not be computed and displayed on the “Features” tab.
+            </p>
+            <p class="pp-text">
+                It must also be noted that setting a threshold to detect spiking is a necessary prerequisite for
+                analysis methods such as spike sorting (see Section 2.3).
+            </p>
+        </div>
+        <div class="sub-sub-section" id="two-two-three">
+            <h3 class="header-sub-sub-section">2.2.3. Threshold Inversion</h3>
+            <p class="pp-text">
+                For some electrophysiological data, depending on the system one uses, spiking can occur in either the
+                anodic (upward—positive) or cathodic (downward—negative) direction. Users can adjust the threshold
+                detection direction such that it matches their data. By default, the threshold and detection of peaks
+                is applied in the cathodic direction. However, click the “Invert Threshold” checkbox on the left panel
+                in the “Parameters” section to apply this feature in the anodic direction.
+            </p>
+        </div>
+        <div class="sub-sub-section" id="two-two-four">
+            <h3 class="header-sub-sub-section">2.2.4. Signal Visualization</h3>
+            <p class="pp-text">
+                On the “Main” tab, the signal the user has selected will appear in time-series format on the graph.
+                The “Plot Display” section of the “Main” tab includes three checkboxes, all of which provide additional
+                flexibility for visualizing spiking within the signal. The “Spike Train” checkbox will show the
+                locations of the spikes as an event-plot above the main signal. “Event Peaks” will display the spike
+                peaks overlayed on top of the main signal within the main plot. Finally, “Threshold Bar” will present
+                a fixed dotted line at the amplitude corresponding to the threshold for peak detection. It must be
+                noted that all three of the available display features enumerated in this paragraph only become
+                available after a threshold has been set, since a threshold is the necessary condition for peak
+                detection. Additionally, users can zoom in and out, move the signal, and save the figure using the
+                toolbar at the bottom of the tab, directly below the plot. Please see
+                <a class="repo-link" href="#figure-2">Figure 2</a> for an example of the utilization of all three
+                visualization methods.
+            </p>
+            <figure class="figure" id="figure-2">
+                <img class="figure-img" src="figures/docs_fig2.png">
+                <figcaption class="figure-cap">
+                    <b>Figure 2:</b> example analysis pipeline using “Main” tab features of Spooky Spikes. Here is outlined
+                    file importation, channel selection, filtering, threshold selection and inversion, as well as
+                    signal and spike visualization.
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <div class="sub-section" id="two-three">
+        <h2 class="header-sub-section">2.3. Spike Sorting</h2>
+        <p class="pp-text">
+            Spooky Spikes includes spike sorting capabilities. Users can select between various clusters of noise and
+            spikes to isolate the activity of interest and refine their analyses. This spike sorting method consists of
+            a principal component analysis followed by k-Means clustering. The first two principal components are
+            displayed on the “Spike Sorting” tab. Additionally, users may refine their spike sorting results by
+            manually selecting the fixed number of clusters used to fit the data on the same tab under the “Number of
+            Clusters” heading (<a class="repo-link" href="#figure-3">Figure 3</a>). Otherwise, the number of clusters is automatically determined based on
+            optimal clustering performance using a silhouette score as a quality metric. The silhouette score for the
+            selected cluster is displayed on the “Features” tab.
+        </p>
+        <figure class="figure" id="figure-3">
+            <img class="figure-img" src="figures/docs_fig3.png">
+            <figcaption class="figure-cap">
+                <b>Figure 3:</b> spike sorting results display including the spread of the first two principal components
+                pertaining to spike waveforms, and the number of clusters used in the clustering computation.
+            </figcaption>
+        </figure>
+        <p class="pp-text">
+            Following spike sorting, features are re-calculated based on the selected cluster. The selected cluster is
+            then displayed on the dropdown menu in the “Select Cluster” section of the “Main” tab. By default, the
+            cluster with spike peaks possessing the highest average amplitude is selected. Within the same tab, the
+            spike waveforms corresponding to the selected cluster are displayed on the main plot as distinctly coloured
+            compared to the rest of the signal (<a class="repo-link" href="#figure-4">Figure 4</a>). As users select different clusters, signal features are
+            re-calculated according to the cluster that has been chosen. This processing method offers an efficient
+            means of isolating different activity and dynamically computing signal characteristics.
+        </p>
+        <figure class="figure" id="figure-4">
+            <img class="figure-img" src="figures/docs_fig4.png">
+            <figcaption class="figure-cap">
+                <b>Figure 4:</b> spike sorting results display including the selected cluster corresponding to the highest
+                mean spike amplitude, and distinctly coloured spike waveforms of the respective cluster.
+            </figcaption>
+        </figure>
+    </div>
+
+    <div class="sub-section" id="two-four">
+        <h2 class="header-sub-section">2.4. Results of Analysis</h2>
+        <p class="pp-text">
+            Following the fulfillment of the necessary preparatory requirements, features are calculated dynamically
+            and presented in the form of numerical displays as well as figures. Additionally, as previously noted in
+            various places, features are dynamically calculated depending on the method used for detecting spike peaks.
+            As users switch between methods (threshold-crossing versus spike sorting), or even alter clustering
+            parameters (number of clusters and selected cluster), the features will be re-computed accordingly. This
+            must be considered, since small alterations in user-selected parameters can drastically change the results
+            obtained from Spooky Spikes.
+        </p>
+        <div class="sub-sub-section" id="two-four-one">
+            <h3 class="header-sub-sub-section">2.4.1. Numerical Displays</h3>
+            <p class="pp-text">
+                Those signal features which are numerically formatted are displayed on the “Features” tab, and
+                correspond to the following categories: patterned, quality metrics, spike-train oscillations, and local
+                field potential (LFP) power (<a class="repo-link" href="#figure-5">Figure 5</a>). It must be noted that if a simple threshold-crossing method is
+                used to calculate spikes and thus, features, then the silhouette score will not be available, since
+                this is a quality metric pertaining to the clustering algorithm used in spike sorting. Furthermore,
+                all characteristics within the LFP category do not require the detection of spiking peaks to be
+                computed, but are calculated and displayed immediately upon importation of the source datafile, and/or
+                selection of the source channel.
+            </p>
+            <figure class="figure" id="figure-5">
+                <img class="figure-img" src="figures/docs_fig5.png">
+                <figcaption class="figure-cap">
+                    <b>Figure 5:</b> results of analysis in numerical format displayed on the “Features” tab, as well
+                    as buttons corresponding to three available figures (ISI Plot, Oscillations Plot, LFP Plot).
+                </figcaption>
+            </figure>
+        </div>
+        <div class="sub-sub-section" id="two-four-two">
+            <h3 class="header-sub-sub-section">2.4.2. Figures</h3>
+            <p class="pp-text">
+                The final component of signal feature display involves four different figures, all of which are
+                available on the “Features” tab under their corresponding sections (<a class="repo-link" href="#figure-5">Figure 5</a>). The first figure
+                (“ISI Plot”) displays a histogram of log-inter-spike-interval durations. A Gaussian mixture model is
+                fitted to the data and displayed, along with the component Gaussian curves (<a class="repo-link" href="#figure-6">Figure 6A</a>). Next, the
+                “Oscillations Plot” presents spike-train oscillations at four different frequency bands with
+                highlighted bursting regions (<a class="repo-link" href="#figure-6">Figure 6B</a>). The “LFP Plot” shows the signal’s power spectral density
+                on the leftmost graph of the pop-up window, followed by LFP oscillations over time at four different
+                frequency bands with highlighted bursting regions (<a class="repo-link" href="#figure-6">Figure 6C</a>). Finally, "Autocorrelation Plot"
+                reveals the signal's autocorrelation up to a 0.5-second lag. Additionally, the power spectrum at four
+                different frequency bands is displayed (<a class="repo-link" href="#figure-6">Figure 6D</a>).
+            </p>
+            <div class="figure-6-container">
+                <figure class="figure-6" id="figure-6">
+                    <div class="fig-6-img-container">
+                        <div class="fig-6-sub-img-container">
+                            <figcaption class="sub-figure-cap">A</figcaption>
+                            <img class="sub-figure-img" src="figures/docs_fig6a.png">
+                        </div>
+                        <div class="fig-6-sub-img-container">
+                            <figcaption class="sub-figure-cap">B</figcaption>
+                            <img class="sub-figure-img" src="figures/docs_fig6b.png">
+                        </div>
+                        <div class="fig-6-sub-img-container">
+                            <figcaption class="sub-figure-cap">C</figcaption>
+                            <img class="sub-figure-img" src="figures/docs_fig6c.png">
+                        </div>
+                        <div class="fig-6-sub-img-container">
+                            <figcaption class="sub-figure-cap">D</figcaption>
+                            <img class="sub-figure-img" src="figures/docs_fig6d.png">
+                        </div>
+                    </div>
+                    <figcaption class="figure-6-cap">
+                        <b>Figure 6:</b> results of analysis in figure format. A) Log-inter-spike-interval duration histogram
+                        (“ISI Plot” button), B) spike-train oscillations over time with highlighted bursting regions
+                        (“Oscillations Plot” button), C) power spectral density (left) and LFP oscillations over time with
+                        highlighted bursting regions (right; “LFP Plot” button), D) autocorrelation up to a lag of 0.5
+                        seconds (left) and power spectrum of spiketrain oscillations at four frequency bands ("Autocorrelation
+                        Plot" button).
+                    </figcaption>
+                </figure>
+            </div>
+        </div>
+    </div>
+
+    <div class="sub-section" id="two-five">
+        <h2 class="header-sub-section">2.5. Exporting Data</h2>
+        <p class="pp-text">
+            Spooky Spikes allows users to save the results of their analysis. All save options can be found on the main
+            left panel of the application under the “Export” heading (<a class="repo-link" href="#figure-7">Figure 7</a>). First, users can save the numerical
+            features extracted from the electrophysiological signal to a spreadsheet. Each feature corresponds to a
+            distinct column while the first row is populated by the resultant features. Furthermore, the signal segment
+            can be saved along with the timestamps of individual spikes found either by threshold-crossing or spike
+            sorting. The “Save Segment (All Spikes)” option will save the imported signal and all spiking timestamps
+            as events in separate channels, or columns depending on the filetype used at the save. Additionally, “Save
+            Segment (Selected Cluster)” will save the imported signal and only the timestamps of spikes belonging to
+            the selected cluster following spike sorting.
+        </p>
+        <figure class="figure" id="figure-7">
+            <img class="figure-img" src="figures/docs_fig7.png">
+            <figcaption class="figure-cap figure-cap-7">
+                <b>Figure 7:</b> save options.
+            </figcaption>
+        </figure>
+    </div>
+</div>
+</body>
+</html>
