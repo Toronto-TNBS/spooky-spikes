@@ -861,3 +861,68 @@ class SpikeAnalysis:
         fig.tight_layout()
 
         return fig
+
+
+    def autocorr_plot(self):
+        spike_times = np.array(self.features_spiketrain_indices) / self.main_fs
+        bin_size = 10e-3
+        max_lag = 500e-3
+
+        bins = np.arange(0, np.max(spike_times) + bin_size, bin_size)
+        spike_counts = np.histogram(spike_times, bins=bins)[0]
+        autocorr = np.correlate(spike_counts, spike_counts, mode='full')[len(spike_counts) - 1:]
+        autocorr_lag = np.arange(0, len(autocorr)) * bin_size
+        autocorr = autocorr[autocorr_lag <= max_lag]
+        autocorr_lag = autocorr_lag[autocorr_lag <= max_lag]
+
+        mer = AnalyzeMER()
+
+        autocorr, autocorr_lag = mer.autocorrelation(spike_times, bin_size, max_lag)
+
+        freqs_theta = np.linspace(4, 8, num=1000)
+        freqs_alpha = np.linspace(8, 12, num=1000)
+        freqs_low_beta = np.linspace(12, 21, num=1000)
+        freqs_high_beta = np.linspace(21, 30, num=1000)
+
+        ls = LombScargle(autocorr_lag, autocorr)
+        power_theta = ls.power(freqs_theta)
+        power_alpha = ls.power(freqs_alpha)
+        power_low_beta = ls.power(freqs_low_beta)
+        power_high_beta = ls.power(freqs_high_beta)
+
+        fig = plt.figure()
+        gs = fig.add_gridspec(4, 2)
+        ax1 = fig.add_subplot(gs[:, 0])
+        ax2 = fig.add_subplot(gs[0, 1])
+        ax3 = fig.add_subplot(gs[1, 1])
+        ax4 = fig.add_subplot(gs[2, 1])
+        ax5 = fig.add_subplot(gs[3, 1])
+
+        ax1.plot(autocorr_lag, autocorr, color='black')
+
+        ax2.plot(freqs_theta, power_theta)
+        ax3.plot(freqs_alpha, power_alpha)
+        ax4.plot(freqs_low_beta, power_low_beta)
+        ax5.plot(freqs_high_beta, power_high_beta)
+
+        ax1.set_xlim([0, 0.5])
+        for ax in [ax2, ax3, ax4, ax5]:
+            ax.set_ylim([0, 1.5])
+
+        ax2.set_xlim([freqs_theta[0], freqs_theta[-1]])
+        ax3.set_xlim([freqs_alpha[0], freqs_alpha[-1]])
+        ax4.set_xlim([freqs_low_beta[0], freqs_low_beta[-1]])
+        ax5.set_xlim([freqs_high_beta[0], freqs_high_beta[-1]])
+
+        ax1.set_xlabel('Lag time (s)')
+        ax1.set_title('Autocorrelation')
+        ax5.set_xlabel('Frequency (Hz)')
+        ax2.set_title('Power Spectrum')
+        ax2.set_ylabel('Theta')
+        ax3.set_ylabel('Alpha')
+        ax4.set_ylabel('Low Beta')
+        ax5.set_ylabel('High Beta')
+
+        fig.tight_layout()
+
+        return fig

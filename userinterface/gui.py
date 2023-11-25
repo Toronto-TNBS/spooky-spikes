@@ -498,6 +498,8 @@ class App(GUIStyles):
 
         self.frame_patterned_aux = Frame(self.tab_features, bg=self.left_panel_bg)
         self.frame_patterned_aux.grid(column=2, row=1, sticky='wens', padx=self.frame_padx)
+        self.frame_patterned_aux.grid_columnconfigure(0, weight=1)
+        self.frame_patterned_aux.grid_rowconfigure(0, weight=1)
 
         self.label_plot_isi = ttk.Label(
             master=self.frame_patterned_aux,
@@ -659,6 +661,8 @@ class App(GUIStyles):
 
         self.frame_oscillations_aux = Frame(self.tab_features, bg=self.left_panel_bg)
         self.frame_oscillations_aux.grid(column=2, row=3, sticky='nswe')
+        self.frame_oscillations_aux.grid_columnconfigure(0, weight=1)
+        self.frame_oscillations_aux.grid_rowconfigure(0, weight=1)
 
         self.label_oscillations_method = ttk.Label(
             master=self.frame_oscillations_aux,
@@ -668,26 +672,6 @@ class App(GUIStyles):
             anchor='center'
         )
         self.label_oscillations_method.grid(column=0, row=0, sticky='we', padx=self.header_align_pad, pady=self.label_output_pady)
-
-        # self.oscillations_method_menu = Menu(tearoff=False)
-        # self.oscillations_method_menu.add_command(
-        #     label='Method 1',
-        #     # command=self.dropdown_save_properties,
-        #     font=self.menu_item_font
-        # )
-        # self.oscillations_method_menu.add_command(
-        #     label='Method 2',
-        #     # command=self.some_function,
-        #     font=self.menu_item_font
-        # )
-        # self.dropdown_oscillations_method = ttk.Menubutton(
-        #     master=self.frame_oscillations_aux,
-        #     direction='below',
-        #     text='Select Method',
-        #     menu=self.oscillations_method_menu,
-        #     style='TMenubutton',
-        # )
-        # self.dropdown_oscillations_method.grid(column=0, row=1, sticky='we', padx=self.header_align_pad)
 
         self.button_plot_oscillations = ttk.Button(
             master=self.frame_oscillations_aux,
@@ -797,6 +781,8 @@ class App(GUIStyles):
 
         self.frame_lfp_aux = Frame(self.tab_features, bg=self.left_panel_bg)
         self.frame_lfp_aux.grid(column=2, row=5, sticky='nesw')
+        self.frame_lfp_aux.grid_columnconfigure(0, weight=1)
+        self.frame_lfp_aux.grid_rowconfigure(0, weight=1)
 
         self.label_plot_lfp = ttk.Label(
             master=self.frame_lfp_aux,
@@ -815,16 +801,42 @@ class App(GUIStyles):
         )
         self.button_plot_lfp.grid(column=0, row=1, sticky='ew', padx=self.widget_align_pad, pady=self.right_header_pady)
 
+        self.label_autocorr = ttk.Label(
+            master=self.tab_features,
+            text='Autocorrelation',
+            style='right_headers.TLabel',
+            background='white'
+        )
+        self.label_autocorr.grid(column=0, row=6, sticky='w', padx=self.header_align_pad,
+                            pady=self.features_headers_pady)
 
-        # self.tab_psd_plot()
-        # self.plot_toolbar_psd()
-        # self.tab_oscillations_plot()
-        # self.plot_toolbar_oscillations()
+        self.frame_autocorr = Frame(self.tab_features, bg=self.left_panel_bg)
+        self.frame_autocorr.grid(column=0, row=7, sticky='nesw', padx=self.frame_padx)
+        # Following centers content in frame.
+        self.frame_autocorr.grid_columnconfigure(0, weight=1)
+        self.frame_autocorr.grid_rowconfigure(0, weight=1)
 
+        self.label_plot_autocorr = ttk.Label(
+            master=self.frame_autocorr,
+            text='Autocorrelation Plot',
+            style='outputs.TLabel',
+            background=self.left_panel_bg,
+            anchor='center'
+        )
+        self.label_plot_autocorr.grid(column=0, row=0, sticky='we', pady=2*self.right_header_pady)
 
+        self.button_plot_autocorr = ttk.Button(
+            master=self.frame_autocorr,
+            text='Generate',
+            style='TButton',
+            command=self.button_plot_autocorr_press,
+
+        )
+        self.button_plot_autocorr.grid(column=0, row=1, sticky='ew', padx=2*self.widget_align_pad, pady=self.right_header_pady)
 
 
         self.event_loop()
+
 
     def event_loop(self):
         while True:
@@ -1755,6 +1767,26 @@ class App(GUIStyles):
 
         self.dynamic_resize(lfp_win, 2, 1)
         lfp_win.mainloop()
+
+
+    def button_plot_autocorr_press(self):
+        fig = spike.autocorr_plot()
+        autocorr_win = Tk()
+        autocorr_win.title('Autocorrelation')
+        autocorr_canvas = FigureCanvasTkAgg(fig, master=autocorr_win)
+        autocorr_canvas.get_tk_widget().grid(column=0, row=0, sticky='nesw')
+        autocorr_canvas.draw()
+
+        toolbar_frame = Frame(autocorr_win)
+        toolbar_frame.grid(column=0, row=1)
+        toolbar = NavigationToolbar2Tk(autocorr_canvas, toolbar_frame)
+        toolbar.configure(background='white')
+        toolbar._message_label.configure(background='white')
+        for i in toolbar.winfo_children():
+            i.configure(background='white', bd=0)
+
+        self.dynamic_resize(autocorr_win, 2, 1)
+        autocorr_win.mainloop()
 
 
     def reset_all_parameters(self):
