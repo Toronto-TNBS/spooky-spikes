@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from matplotlib import patheffects
 import numpy as np
 from scipy.signal import filtfilt, iirfilter, butter, sosfilt, find_peaks, welch, peak_widths, hilbert
 from sklearn.decomposition import PCA
@@ -16,6 +17,7 @@ from spikedata.AnalyzeMER import AnalyzeMER
 
 plt.style.use('ggplot')
 mer = AnalyzeMER()
+plt.rcParams['svg.fonttype'] = 'none'
 
 
 class SpikeAnalysis:
@@ -101,6 +103,8 @@ class SpikeAnalysis:
         ax[1].set_xlabel('Time (s)')
         ax[1].set_ylabel('Magnitude (V)')
         ax[1].spines['top'].set_visible(False)
+        # ax[0].grid(False)
+        # ax[1].grid(False)
 
         # This allows for coloured events to be saved to variables without having to check spiketrain.
         if self.spikesorting_plot_disp:
@@ -183,7 +187,7 @@ class SpikeAnalysis:
             )
             self.main_event_peak_times = events[0]
             self.main_event_peak_mags = events[1]
-            ax[1].plot(self.main_event_peak_times, self.main_event_peak_mags, '.', linewidth=3)
+            ax[1].plot(self.main_event_peak_times, self.main_event_peak_mags, '.', linewidth=3, path_effects=[patheffects.Normal()])
         if self.main_disp_threshold:
             threshold_bar = [self.main_threshold for i in range(len(self.main_times))]
             ax[1].plot(self.main_times, threshold_bar, 'k--', linewidth=0.5)
@@ -208,6 +212,7 @@ class SpikeAnalysis:
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 6.5))
         ax.set_xlabel('Principal Component 1')
         ax.set_ylabel('Principal Component 2')
+        # ax.grid(False)
 
         if self.spikesorting_plot_disp and self.main_threshold_set:
 
@@ -250,6 +255,7 @@ class SpikeAnalysis:
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 7.5))
         ax.set_xlabel('Frequency')
         ax.set_ylabel('Power')
+        # ax.grid(False)
         if self.psd_good_file:
             ax.plot(self.psd_frequencies, self.psd_power, 'k')
         else:
@@ -270,6 +276,9 @@ class SpikeAnalysis:
         ax[1].set_title('Lomb-Scargle Periodogram')
         ax[1].set_xlabel('Frequency')
         ax[1].set_ylabel('Power')
+
+        # ax[0].grid(False)
+        # ax[1].grid(False)
 
         if self.main_threshold_set and self.lag_time != 0 and self.time_interval != 0:
             ax[0].set_ylim([min(self.autocorr) - 0.1, max(self.autocorr) + 0.1])
@@ -611,6 +620,7 @@ class SpikeAnalysis:
 
     def isi_plot(self):
         fig, ax = plt.subplots(1, 1)
+        # ax.grid(False)
         # Ensure that spikes are from the target neuron, probably by requiring spike sorting before plotting.
         spike_times = self.main_times[np.array(list(self.features_spiketrain_indices), dtype=int)]
         isi = np.log(np.diff(spike_times))
@@ -644,6 +654,8 @@ class SpikeAnalysis:
         burst_threshold = mer.burst_threshold(events, data_type='spiketrain')
 
         fig, ax = plt.subplots(4, 1, sharex=True, sharey=True)
+        # for i in range(4):
+        #     ax[i].grid(False)
         ax[0].plot(self.spike_oscillations_theta_times, self.spike_oscillations_theta_wave)
         ax[1].plot(self.spike_oscillations_alpha_times, self.spike_oscillations_alpha_wave)
         ax[2].plot(self.spike_oscillations_low_beta_times, self.spike_oscillations_low_beta_wave)
@@ -759,6 +771,12 @@ class SpikeAnalysis:
         ax3 = fig.add_subplot(gs[1, 1])
         ax4 = fig.add_subplot(gs[2, 1])
         ax5 = fig.add_subplot(gs[3, 1])
+
+        # ax1.grid(False)
+        # ax2.grid(False)
+        # ax3.grid(False)
+        # ax4.grid(False)
+        # ax5.grid(False)
 
         # Fix the time arrays for the LFP waveforms.
         ax1.plot(self.lfp_psd_freqs, self.lfp_psd_power)
@@ -897,6 +915,12 @@ class SpikeAnalysis:
         ax3 = fig.add_subplot(gs[1, 1])
         ax4 = fig.add_subplot(gs[2, 1])
         ax5 = fig.add_subplot(gs[3, 1])
+
+        # ax1.grid(False)
+        # ax2.grid(False)
+        # ax3.grid(False)
+        # ax4.grid(False)
+        # ax5.grid(False)
 
         ax1.plot(autocorr_lag, autocorr, color='black')
 
