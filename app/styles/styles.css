@@ -1,0 +1,56 @@
+
+#control {background-color: #EDEDED;}
+#analysis {background-color: white;}
+
+.header {
+    font-weight: bold;
+    font-size: 12pt;
+    margin: 10% 0 0 0;
+}
+
+QPushButton {
+    background-color: #205375;
+    color: white;
+}
+
+QComboBox {
+    height: 25%;
+}
+
+QTabWidget::tab-bar {
+    alignment: center;
+}
+
+QTabBar::tab {
+    background-color: #205375;
+    color: white;
+    font-size: 10pt;
+    font-weight: bold;
+    width: 150;
+    height: 40%;
+}
+QTabBar::tab:selected {
+    background-color: #2D4059;
+}
+
+
+.subheader {
+    font-weight: bold;
+    font-size: 11pt;
+    margin: 10% 0 0 0;
+}
+.label {
+    font-size: 10pt;
+}
+
+QLineEdit {
+    background-color: #EDEDED;
+}
+
+.frame-features {
+    background-color: #EDEDED;
+}
+.label-features-status {
+    background-color: white;
+    width: 50%;
+}
