@@ -54,3 +54,8 @@ QLineEdit {
     background-color: white;
     width: 50%;
 }
+
+/* Plots */
+.frame-plot {
+    background-color: #EDEDED;
+}

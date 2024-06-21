@@ -127,7 +127,7 @@ class App(QApplication):
         self.grid_tab_main.addWidget(self.button_tab_main_threshold, 5, 1)
 
         self.label_tab_main_thresholdstatus = QLabel('Threshold: None (Factor: None)')
-        self.grid_tab_main.addWidget(self.label_tab_main_thresholdstatus, 5, 2)
+        self.grid_tab_main.addWidget(self.label_tab_main_thresholdstatus, 5, 2, 1, 2)
 
         self.subheader_tab_main_plot = QLabel('Plot Display')
         self.subheader_tab_main_plot.setProperty('class', 'subheader')
@@ -149,9 +149,19 @@ class App(QApplication):
         self.dropdown_tab_main_cluster = QComboBox()
         self.grid_tab_main.addWidget(self.dropdown_tab_main_cluster, 7, 3)
 
-        data = np.random.normal(0, 1, 1000)
-        plot = pg.plot(data)    # Returns plot object.
-        self.grid_tab_main.addWidget(plot, 8, 0, 1, 4)
+        data = np.random.normal(0, 1, int(1e3))
+        self.plot_tab_main = pg.plot(data, pen=pg.mkPen('cornflowerblue', width=1.5))    # Returns plot object.
+        self.plot_tab_main.setClipToView(True)
+        self.plot_tab_main.setDownsampling(True)
+        self.plot_tab_main.setBackground('#EDEDED')
+        self.plot_tab_main.setObjectName('plot-main')
+        self.frame_plot_tab_main = QFrame()
+        self.frame_plot_tab_main.setProperty('class', 'frame-plot')
+        self.frame_plot_tab_main.setFrameShape(QFrame.Box)
+        self.grid_frame_plot_tab_main = QGridLayout()
+        self.frame_plot_tab_main.setLayout(self.grid_frame_plot_tab_main)
+        self.grid_frame_plot_tab_main.addWidget(self.plot_tab_main, 0, 0)
+        self.grid_tab_main.addWidget(self.frame_plot_tab_main, 8, 0, 1, 4)
         # Embedding PyQtGraph: https://stackoverflow.com/questions/17925006/embedding-pyqtgraph-in-qt-without-generating-new-window
         # https://www.pyqtgraph.org/
         
@@ -164,8 +174,17 @@ class App(QApplication):
         self.grid_tab_spikesorting.addWidget(self.dropdown_tab_spikesorting_clusters, 1, 0)
 
         data = np.random.normal(0, 1, 1000)
-        plot = pg.plot(data)
-        self.grid_tab_spikesorting.addWidget(plot, 2, 0, 1, 3)
+        self.plot_tab_spikesorting = pg.plot(data, pen=pg.mkPen('cornflowerblue', width=1.25))
+        self.plot_tab_spikesorting.setClipToView(True)
+        self.plot_tab_spikesorting.setDownsampling(True)
+        self.plot_tab_spikesorting.setBackground('#EDEDED')
+        self.frame_plot_tab_spikesorting = QFrame()
+        self.frame_plot_tab_spikesorting.setFrameShape(QFrame.Box)
+        self.frame_plot_tab_spikesorting.setProperty('class', 'frame-plot')
+        self.grid_frame_plot_tab_spikesorting = QGridLayout()
+        self.frame_plot_tab_spikesorting.setLayout(self.grid_frame_plot_tab_spikesorting)
+        self.grid_frame_plot_tab_spikesorting.addWidget(self.plot_tab_spikesorting)
+        self.grid_tab_spikesorting.addWidget(self.frame_plot_tab_spikesorting, 2, 0, 1, 3)
 
         # Features Tab
 
@@ -359,7 +378,7 @@ class App(QApplication):
 
     def init_main_window(self):
         window = QWidget()
-        window.resize(950, 700)
+        window.resize(900, 600)
 
         grid = QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
