@@ -149,18 +149,13 @@ class App(QApplication):
         self.dropdown_tab_main_cluster = QComboBox()
         self.grid_tab_main.addWidget(self.dropdown_tab_main_cluster, 7, 3)
 
-        data = np.random.normal(0, 1, int(1e3))
-        self.plot_tab_main = pg.plot(data, pen=pg.mkPen('cornflowerblue', width=1.5))    # Returns plot object.
-        self.plot_tab_main.setClipToView(True)
-        self.plot_tab_main.setDownsampling(True)
-        self.plot_tab_main.setBackground('#EDEDED')
-        self.plot_tab_main.setObjectName('plot-main')
+        self.plot1_tab_main, self.plot2_tab_main, self.plot_layout_tab_main = self.init_tab_main_plot()
         self.frame_plot_tab_main = QFrame()
         self.frame_plot_tab_main.setProperty('class', 'frame-plot')
         self.frame_plot_tab_main.setFrameShape(QFrame.Box)
         self.grid_frame_plot_tab_main = QGridLayout()
         self.frame_plot_tab_main.setLayout(self.grid_frame_plot_tab_main)
-        self.grid_frame_plot_tab_main.addWidget(self.plot_tab_main, 0, 0)
+        self.grid_frame_plot_tab_main.addWidget(self.plot_layout_tab_main, 0, 0)
         self.grid_tab_main.addWidget(self.frame_plot_tab_main, 8, 0, 1, 4)
         # Embedding PyQtGraph: https://stackoverflow.com/questions/17925006/embedding-pyqtgraph-in-qt-without-generating-new-window
         # https://www.pyqtgraph.org/
@@ -414,6 +409,50 @@ class App(QApplication):
         grid = QGridLayout()
         frame.setLayout(grid)
         return frame, grid
+    
+
+    def init_tab_main_plot(self):
+        data = np.random.normal(0, 1, int(1e3))
+
+        layout = pg.GraphicsLayoutWidget()
+        plot1 = layout.addPlot(row=0, col=0)
+        plot2 = layout.addPlot(y=data, row=1, col=0, rowspan=2, pen=pg.mkPen('cornflowerblue', width=1.5))
+
+        for i in np.linspace(0, len(data), 100):
+            event = pg.InfiniteLine(pos=i, pen=pg.mkPen('r'))
+            plot1.addItem(event)
+        
+        plot2.setClipToView(True)
+        plot2.setDownsampling(True)
+        
+        layout.setBackground('#EDEDED')
+        plot1.setProperty('class', 'plot-main')
+        plot2.setProperty('class', 'plot-main')
+
+        layout.ci.layout.setRowStretchFactor(0, 1)
+        layout.ci.layout.setRowStretchFactor(1, 10)
+
+        plot1.showAxes(selection=['bottom', 'left'], showValues=False)
+        plot1.getAxis('left').setLabel('Spike Train')
+        plot1.getAxis('left').setTicks([])
+        plot1.getAxis('right').setTicks([])
+        plot1.getAxis('top').setTicks([])
+        plot1.getAxis('bottom').setTicks([])
+        plot1.hideAxis('right')
+        plot1.hideAxis('top')
+
+        plot2.getAxis('bottom').setLabel('Time (s)')
+        plot2.getAxis('left').setLabel('Magnitude')
+
+        plot1.setXLink(plot2)
+        
+        return plot1, plot2, layout
+
+        # self.plot_tab_main = pg.plot(data, pen=pg.mkPen('cornflowerblue', width=1.5))    # Returns plot object.
+        # self.plot_tab_main.setClipToView(True)
+        # self.plot_tab_main.setDownsampling(True)
+        # self.plot_tab_main.setBackground('#EDEDED')
+        # self.plot_tab_main.setObjectName('plot-main')
 
 
 App()
