@@ -157,8 +157,7 @@ class App(QApplication):
         self.frame_plot_tab_main.setLayout(self.grid_frame_plot_tab_main)
         self.grid_frame_plot_tab_main.addWidget(self.plot_layout_tab_main, 0, 0)
         self.grid_tab_main.addWidget(self.frame_plot_tab_main, 8, 0, 1, 4)
-        # Embedding PyQtGraph: https://stackoverflow.com/questions/17925006/embedding-pyqtgraph-in-qt-without-generating-new-window
-        # https://www.pyqtgraph.org/
+    
         
         # Spike Sorting Tab
         self.subheader_tab_spikesorting_clusters = QLabel('Number of Clusters')
@@ -168,17 +167,13 @@ class App(QApplication):
         self.dropdown_tab_spikesorting_clusters = QComboBox()
         self.grid_tab_spikesorting.addWidget(self.dropdown_tab_spikesorting_clusters, 1, 0)
 
-        data = np.random.normal(0, 1, 1000)
-        self.plot_tab_spikesorting = pg.plot(data, pen=pg.mkPen('cornflowerblue', width=1.25))
-        self.plot_tab_spikesorting.setClipToView(True)
-        self.plot_tab_spikesorting.setDownsampling(True)
-        self.plot_tab_spikesorting.setBackground('#EDEDED')
+        self.plot_tab_spikesorting, self.plot_layout_tab_spikesorting = self.init_tab_spikesorting_plot()
         self.frame_plot_tab_spikesorting = QFrame()
         self.frame_plot_tab_spikesorting.setFrameShape(QFrame.Box)
         self.frame_plot_tab_spikesorting.setProperty('class', 'frame-plot')
         self.grid_frame_plot_tab_spikesorting = QGridLayout()
         self.frame_plot_tab_spikesorting.setLayout(self.grid_frame_plot_tab_spikesorting)
-        self.grid_frame_plot_tab_spikesorting.addWidget(self.plot_tab_spikesorting)
+        self.grid_frame_plot_tab_spikesorting.addWidget(self.plot_layout_tab_spikesorting)
         self.grid_tab_spikesorting.addWidget(self.frame_plot_tab_spikesorting, 2, 0, 1, 3)
 
         # Features Tab
@@ -447,12 +442,24 @@ class App(QApplication):
         plot1.setXLink(plot2)
         
         return plot1, plot2, layout
+    
 
-        # self.plot_tab_main = pg.plot(data, pen=pg.mkPen('cornflowerblue', width=1.5))    # Returns plot object.
-        # self.plot_tab_main.setClipToView(True)
-        # self.plot_tab_main.setDownsampling(True)
-        # self.plot_tab_main.setBackground('#EDEDED')
-        # self.plot_tab_main.setObjectName('plot-main')
+    def init_tab_spikesorting_plot(self):
+        data = np.random.normal(0, 1, int(1e2))
+        layout = pg.GraphicsLayoutWidget()
+        plot = layout.addPlot(row=0, col=0)
+        item = pg.ScatterPlotItem(x=data, y=data, pen=pg.mkPen('cornflowerblue', width=1.25), brush=pg.mkBrush('cornflowerblue'))    # Pen for border, Brush for fill.
+        plot.addItem(item)
+
+        layout.setBackground('#EDEDED')
+        plot.setClipToView(True)
+        plot.setDownsampling(True)
+
+        plot.getAxis('bottom').setLabel('Principal Component 1')
+        plot.getAxis('left').setLabel('Principal Component 2')
+
+        return plot, layout
+
 
 
 App()
