@@ -3,6 +3,7 @@ from PySide6 import QtCore
 from PySide6.QtCore import Slot
 import pyqtgraph as pg
 import numpy as np
+from slots import slots
 
 with open(f'{__file__[:-7]}/styles/styles.css', 'r') as file:
     STYLESHEET = file.read()
@@ -36,6 +37,7 @@ class App(QApplication):
 
         self.button_file = QPushButton('Choose file')
         self.grid_control.addWidget(self.button_file, 1, 2, 1, 1)
+        self.button_file.clicked.connect(lambda: slots.button_file_clicked(self))
 
         self.header_channel = QLabel('Source Channel')
         self.header_channel.setProperty('class', 'header')
@@ -43,6 +45,7 @@ class App(QApplication):
 
         self.dropdown_channel = QComboBox()
         self.grid_control.addWidget(self.dropdown_channel, 3, 0, 1, 3)
+        self.dropdown_channel.setPlaceholderText('Select channel')
 
         self.header_processing = QLabel('Processing')
         self.header_processing.setProperty('class', 'header')
