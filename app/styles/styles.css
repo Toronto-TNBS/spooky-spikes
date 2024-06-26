@@ -12,6 +12,12 @@ QPushButton {
     background-color: #205375;
     color: white;
 }
+QPushButton:hover {
+    background-color: #3582b6;
+}
+QPushButton:pressed {
+    background-color: rgb(252, 93, 93);
+}
 
 QComboBox {
     height: 25%;
@@ -44,10 +50,10 @@ QTabBar::tab:selected {
 }
 
 QLineEdit {
-    background-color: #EDEDED;
+    background-color: white;
 }
 
-.frame-features {
+.frame-parameters {
     background-color: #EDEDED;
 }
 .label-features-status {
@@ -57,5 +63,6 @@ QLineEdit {
 
 /* Plots */
 .frame-plot {
-    background-color: #EDEDED;
+    /* background-color: #EDEDED; */
+    background-color: white;
 }
