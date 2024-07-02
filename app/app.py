@@ -14,6 +14,10 @@ class App(QApplication):
     def __init__(self):
         super().__init__()
 
+        # The following two variables allow for continuous tracking of data.
+        self.filedata = None    # Loaded file data.
+        self.channeldata = None    # Selected channel data.
+
         self.setStyleSheet(STYLESHEET)
 
         self.window_main, self.grid_main = self.init_main_window()
@@ -46,18 +50,23 @@ class App(QApplication):
         self.dropdown_channel = QComboBox()
         self.grid_control.addWidget(self.dropdown_channel, 3, 0, 1, 3)
         self.dropdown_channel.setPlaceholderText('Select channel')
+        self.dropdown_channel.currentIndexChanged.connect(lambda: slots.dropdown_channel_changed(self))
 
         self.header_processing = QLabel('Processing')
         self.header_processing.setProperty('class', 'header')
         self.grid_control.addWidget(self.header_processing, 4, 0, 1, 3)
 
-        self.checkbox_filtering = QCheckBox('Filtering')
-        self.grid_control.addWidget(self.checkbox_filtering, 5, 0, 1, 3)
+        self.check_filtering = QCheckBox('Filtering')
+        self.check_filtering.setEnabled(False)
+        self.grid_control.addWidget(self.check_filtering, 5, 0, 1, 3)
+        self.check_filtering.stateChanged.connect(lambda: slots.check_filtering_changed(self))
 
-        self.checkbox_spikesorting = QCheckBox('Spike Sorting')
-        self.grid_control.addWidget(self.checkbox_spikesorting, 6, 0, 1, 3)
+        self.check_spikesorting = QCheckBox('Spike Sorting')
+        self.check_spikesorting.setEnabled(False)
+        self.grid_control.addWidget(self.check_spikesorting, 6, 0, 1, 3)
 
         self.check_invertsegment = QCheckBox('Invert Segment')
+        self.check_invertsegment.setEnabled(False)
         self.grid_control.addWidget(self.check_invertsegment, 7, 0, 1, 3)
 
         self.header_export = QLabel('Export')
@@ -109,15 +118,19 @@ class App(QApplication):
         
         self.entry_tab_main_hpcutoff = QLineEdit()
         self.entry_tab_main_hpcutoff.setMaximumWidth(100)
+        self.entry_tab_main_hpcutoff.setEnabled(False)
         self.grid_tab_main_filtering.addWidget(self.entry_tab_main_hpcutoff, 1, 0)
         
         self.entry_tab_main_lpcutoff = QLineEdit()
         self.entry_tab_main_lpcutoff.setMaximumWidth(100)
+        self.entry_tab_main_lpcutoff.setEnabled(False)
         self.grid_tab_main_filtering.addWidget(self.entry_tab_main_lpcutoff, 1, 1)
         
         self.button_tab_main_filtering = QPushButton('Set')
         self.button_tab_main_filtering.setMaximumWidth(100)
+        self.button_tab_main_filtering.setEnabled(False)
         self.grid_tab_main_filtering.addWidget(self.button_tab_main_filtering, 1, 2)
+        self.button_tab_main_filtering.clicked.connect(lambda: slots.button_tab_main_filtering_clicked(self))
         
         self.label_tab_main_filterstatus = QLabel('HP: None\nLP: None')
         self.grid_tab_main_filtering.addWidget(self.label_tab_main_filterstatus, 1, 3)
@@ -136,11 +149,14 @@ class App(QApplication):
 
         self.entry_tab_main_madfactor = QLineEdit()
         self.entry_tab_main_madfactor.setMaximumWidth(100)
+        self.entry_tab_main_madfactor.setEnabled(False)
         self.grid_tab_main_threshold.addWidget(self.entry_tab_main_madfactor, 1, 0)
 
         self.button_tab_main_threshold = QPushButton('Set')
         self.button_tab_main_threshold.setMaximumWidth(100)
+        self.button_tab_main_threshold.setEnabled(False)
         self.grid_tab_main_threshold.addWidget(self.button_tab_main_threshold, 1, 1)
+        self.button_tab_main_threshold.clicked.connect(lambda: slots.button_tab_main_threshold_clicked(self))
 
         self.label_tab_main_thresholdstatus = QLabel('Threshold: None (Factor: None)')
         self.grid_tab_main_threshold.addWidget(self.label_tab_main_thresholdstatus, 1, 2)
@@ -162,12 +178,15 @@ class App(QApplication):
         self.grid_tab_main_cluster.setHorizontalSpacing(25)
 
         self.check_tab_main_spiketrain = QCheckBox('Spike Train')
+        self.check_tab_main_spiketrain.setEnabled(False)
         self.grid_tab_main_plotdisp.addWidget(self.check_tab_main_spiketrain, 0, 0)
 
         self.check_tab_main_eventtimes = QCheckBox('Event Times')
+        self.check_tab_main_eventtimes.setEnabled(False)
         self.grid_tab_main_plotdisp.addWidget(self.check_tab_main_eventtimes, 0, 1)
 
         self.check_tab_main_thresholdbar = QCheckBox('Threshold Bar')
+        self.check_tab_main_thresholdbar.setEnabled(False)
         self.grid_tab_main_plotdisp.addWidget(self.check_tab_main_thresholdbar, 0, 2)
 
         self.dropdown_tab_main_cluster = QComboBox()
@@ -266,6 +285,7 @@ class App(QApplication):
         self.grid_tab_features_isiplot.addWidget(self.label_tab_features_isiplot, 0, 0, QtCore.Qt.AlignCenter)
 
         self.button_tab_features_isiplot = QPushButton('Generate')
+        self.button_tab_features_isiplot.setEnabled(False)
         self.grid_tab_features_isiplot.addWidget(self.button_tab_features_isiplot, 1, 0)
 
         # Features Spiketrain Oscillations Frame
@@ -326,6 +346,7 @@ class App(QApplication):
         self.grid_tab_features_spikeoscillationsplot.addWidget(self.label_tab_features_spikeoscillationsplot, 0, 0, QtCore.Qt.AlignCenter)
         
         self.button_tab_features_spikeoscillationsplot = QPushButton('Generate')
+        self.button_tab_features_spikeoscillationsplot.setEnabled(False)
         self.grid_tab_features_spikeoscillationsplot.addWidget(self.button_tab_features_spikeoscillationsplot, 1, 0)
 
         # Features LFP Power Frame
@@ -371,6 +392,7 @@ class App(QApplication):
         self.grid_tab_features_lfpplot.addWidget(self.label_tab_features_lfpplot, 0, 0, QtCore.Qt.AlignCenter)
         
         self.button_tab_features_lfpplot = QPushButton('Generate')
+        self.button_tab_features_lfpplot.setEnabled(False)
         self.grid_tab_features_lfpplot.addWidget(self.button_tab_features_lfpplot, 1, 0)
 
         # Features Autocorrelation Frame
@@ -385,6 +407,7 @@ class App(QApplication):
         self.grid_tab_features_autocorrelationplot.addWidget(self.label_tab_features_autocorrelationplot, 0, 0, QtCore.Qt.AlignCenter)
 
         self.button_tab_features_autocorrelationplot = QPushButton('Generate')
+        self.button_tab_features_autocorrelationplot.setEnabled(False)
         self.grid_tab_features_autocorrelationplot.addWidget(self.button_tab_features_autocorrelationplot, 1, 0)
 
         self.grid_tab_features.setRowStretch(self.grid_tab_features.rowCount(), 1)    # Stretch empty row at end to fill bottom space.
@@ -435,15 +458,13 @@ class App(QApplication):
     
 
     def init_tab_main_plot(self):
-        data = np.random.normal(0, 1, int(1e3))
-
         layout = pg.GraphicsLayoutWidget()
         plot1 = layout.addPlot(row=0, col=0)
-        plot2 = layout.addPlot(y=data, row=1, col=0, rowspan=2, pen=pg.mkPen('cornflowerblue', width=1.5))
+        plot2 = layout.addPlot(row=1, col=0, rowspan=2)
 
-        for i in np.linspace(0, len(data), 100):
-            event = pg.InfiniteLine(pos=i, pen=pg.mkPen('r'))
-            plot1.addItem(event)
+        # for i in np.linspace(0, len(data), 100):
+        #     event = pg.InfiniteLine(pos=i, pen=pg.mkPen('r'))
+        #     plot1.addItem(event)
         
         plot2.setClipToView(True)
         plot2.setDownsampling(True)
@@ -475,7 +496,7 @@ class App(QApplication):
         plot = layout.addPlot(row=0, col=0)
         item = pg.ScatterPlotItem(x=data, y=data, pen=pg.mkPen('cornflowerblue', width=1.25), brush=pg.mkBrush('cornflowerblue'))    # Pen for border, Brush for fill.
         plot.addItem(item)
-
+        
         layout.setBackground('white')
 
         plot.getAxis('bottom').setLabel('Principal Component 1')
