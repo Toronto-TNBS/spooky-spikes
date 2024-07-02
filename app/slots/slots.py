@@ -103,20 +103,12 @@ def button_tab_main_threshold_clicked(app):
     app.channeldata.spike_indices = spike_indices
 
     # Update main plot
-    def vertical_line_symbol():
-        symbol = QtGui.QPainterPath()
-        symbol.moveTo(0, -10)
-        symbol.lineTo(0, 10)
-        return symbol
-        
-
     misc.remove_plot_item(plotitem=app.plot2_tab_main, itemtype=pg.ScatterPlotItem)    # Remove previously plotted spikes if they exist.
     peaks_scatter_item = pg.ScatterPlotItem(x=time_vector[spike_indices], y=current_signal[spike_indices], pen=pg.mkPen('r'), brush=pg.mkBrush('r'), size=5)
     app.plot2_tab_main.addItem(peaks_scatter_item)
     threshold_bar_item = pg.InfiniteLine(pos=-app.channeldata.threshold, angle=0, pen=pg.mkPen('k', width=1, style=QtCore.Qt.DashLine))
     app.plot2_tab_main.addItem(threshold_bar_item)
-    # misc.plot_spike_events(plotitem=app.plot1_tab_main, spike_times=time_vector[spike_indices])
-    events_scatter_item = pg.ScatterPlotItem(x=time_vector[spike_indices], y=[0]*len(spike_indices), pen=pg.mkPen('r'), brush=pg.mkBrush('r'))
+    events_scatter_item = pg.ScatterPlotItem(x=time_vector[spike_indices], y=[0]*len(spike_indices), symbol=misc.vertical_line_symbol(), pen=pg.mkPen('r'), brush=pg.mkBrush('r'))
     app.plot1_tab_main.addItem(events_scatter_item)
 
     # Will this execute the slots connected to the checkboxes?

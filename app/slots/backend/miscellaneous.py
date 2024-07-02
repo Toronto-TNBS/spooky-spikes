@@ -1,3 +1,4 @@
+from PySide6 import QtGui
 import pyqtgraph as pg
 
 
@@ -14,7 +15,8 @@ def remove_plot_item(plotitem, itemtype):
             plotitem.removeItem(item)
 
 
-def plot_spike_events(plotitem, spike_times):
-    for event in spike_times:
-        event_item = pg.InfiniteLine(pos=event, angle=90, pen=pg.mkPen('r', width=1))
-        plotitem.addItem(event_item)    
+def vertical_line_symbol():
+        symbol = QtGui.QPainterPath()
+        symbol.moveTo(0, -1)
+        symbol.lineTo(0, 1)
+        return symbol

@@ -461,10 +461,6 @@ class App(QApplication):
         layout = pg.GraphicsLayoutWidget()
         plot1 = layout.addPlot(row=0, col=0)
         plot2 = layout.addPlot(row=1, col=0, rowspan=2)
-
-        # for i in np.linspace(0, len(data), 100):
-        #     event = pg.InfiniteLine(pos=i, pen=pg.mkPen('r'))
-        #     plot1.addItem(event)
         
         plot2.setClipToView(True)
         plot2.setDownsampling(True)
@@ -478,9 +474,8 @@ class App(QApplication):
         plot1.getAxis('bottom').setTicks([])
         plot1.hideAxis('right')
         plot1.hideAxis('top')
-        # plot1.hideAxis('bottom')
         plot1.hideAxis('left')
-        
+        plot1.setMouseEnabled(x=True, y=False)
 
         plot2.getAxis('bottom').setLabel('Time (s)')
         plot2.getAxis('left').setLabel('Magnitude')
