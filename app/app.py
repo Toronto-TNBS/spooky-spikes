@@ -17,6 +17,7 @@ class App(QApplication):
         # The following two variables allow for continuous tracking of data.
         self.filedata = None    # Loaded file data.
         self.channeldata = None    # Selected channel data.
+        self.threshold_bar_item = None   # pg.InfiniteLine objects of threshold bar. Not stored in PlotItem object, so must track.
 
         self.setStyleSheet(STYLESHEET)
 
@@ -64,10 +65,12 @@ class App(QApplication):
         self.check_spikesorting = QCheckBox('Spike Sorting')
         self.check_spikesorting.setEnabled(False)
         self.grid_control.addWidget(self.check_spikesorting, 6, 0, 1, 3)
+        self.check_spikesorting.stateChanged.connect(lambda: slots.check_spikesorting_changed(self))
 
-        self.check_invertsegment = QCheckBox('Invert Segment')
-        self.check_invertsegment.setEnabled(False)
-        self.grid_control.addWidget(self.check_invertsegment, 7, 0, 1, 3)
+        self.check_invertthreshold = QCheckBox('Invert Threshold')
+        self.check_invertthreshold.setEnabled(False)
+        self.grid_control.addWidget(self.check_invertthreshold, 7, 0, 1, 3)
+        self.check_invertthreshold.stateChanged.connect(lambda: slots.check_invertthreshold_changed(self))
 
         self.header_export = QLabel('Export')
         self.header_export.setProperty('class', 'header')
@@ -177,21 +180,25 @@ class App(QApplication):
         self.grid_tab_main.addWidget(self.frame_tab_main_cluster, 5, 1)
         self.grid_tab_main_cluster.setHorizontalSpacing(25)
 
-        self.check_tab_main_spiketrain = QCheckBox('Spike Train')
+        self.check_tab_main_spiketrain = QCheckBox('Spikes')
         self.check_tab_main_spiketrain.setEnabled(False)
         self.grid_tab_main_plotdisp.addWidget(self.check_tab_main_spiketrain, 0, 0)
+        self.check_tab_main_spiketrain.stateChanged.connect(lambda: slots.check_tab_main_spiketrain_changed(self))
 
         self.check_tab_main_eventtimes = QCheckBox('Event Times')
         self.check_tab_main_eventtimes.setEnabled(False)
         self.grid_tab_main_plotdisp.addWidget(self.check_tab_main_eventtimes, 0, 1)
+        self.check_tab_main_eventtimes.stateChanged.connect(lambda: slots.check_tab_main_eventtimes_changed(self))
 
         self.check_tab_main_thresholdbar = QCheckBox('Threshold Bar')
         self.check_tab_main_thresholdbar.setEnabled(False)
         self.grid_tab_main_plotdisp.addWidget(self.check_tab_main_thresholdbar, 0, 2)
+        self.check_tab_main_thresholdbar.stateChanged.connect(lambda: slots.check_tab_main_thresholdbar_changed(self))
 
         self.dropdown_tab_main_cluster = QComboBox()
         self.dropdown_tab_main_cluster.setMaximumWidth(200)
         self.grid_tab_main_cluster.addWidget(self.dropdown_tab_main_cluster, 0, 0)
+        self.dropdown_tab_main_cluster.currentIndexChanged.connect(lambda: slots.dropdown_tab_main_cluster_changed(self))
 
         self.plot1_tab_main, self.plot2_tab_main, self.plot_layout_tab_main = self.init_tab_main_plot()
         self.frame_plot_tab_main = QFrame()
@@ -213,6 +220,9 @@ class App(QApplication):
 
         self.dropdown_tab_spikesorting_clusters = QComboBox()
         self.grid_tab_spikesorting_cluster.addWidget(self.dropdown_tab_spikesorting_clusters, 0, 0)
+        self.dropdown_tab_spikesorting_clusters.addItems(['auto']+[str(i) for i in np.arange(2, 7)])
+        self.dropdown_tab_spikesorting_clusters.setPlaceholderText('auto')
+        self.dropdown_tab_spikesorting_clusters.currentIndexChanged.connect(lambda: slots.dropdown_tab_spikesorting_clusters_changed(self))
 
         self.plot_tab_spikesorting, self.plot_layout_tab_spikesorting = self.init_tab_spikesorting_plot()
         self.frame_plot_tab_spikesorting = QFrame()
@@ -489,11 +499,8 @@ class App(QApplication):
         data = np.random.normal(0, 1, int(1e2))
         layout = pg.GraphicsLayoutWidget()
         plot = layout.addPlot(row=0, col=0)
-        item = pg.ScatterPlotItem(x=data, y=data, pen=pg.mkPen('cornflowerblue', width=1.25), brush=pg.mkBrush('cornflowerblue'))    # Pen for border, Brush for fill.
-        plot.addItem(item)
         
         layout.setBackground('white')
-
         plot.getAxis('bottom').setLabel('Principal Component 1')
         plot.getAxis('left').setLabel('Principal Component 2')
 
