@@ -76,6 +76,7 @@ def check_spikesorting_changed(app):
         app.channeldata.silhouette_score = None
         app.label_tab_features_qualitymetrics_silhouette_status.setText('')
         app.dropdown_tab_main_cluster.clear()
+        app.channeldata.spike_matrix = None    # Reset spike matrix for new spike sorting operation.
 
         # Reset to all spikes.
         app.channeldata.current_spike_indices = app.channeldata.spike_indices_all
@@ -118,6 +119,8 @@ def check_invertthreshold_changed(app):
     app.check_tab_main_spiketrain.setChecked(False)
     app.check_tab_main_eventtimes.setChecked(False)
     app.check_tab_main_thresholdbar.setChecked(False)
+
+    app.check_spikesorting.setChecked(False)    # Turn off spike sorting.
     button_tab_main_threshold_clicked(app)    # Restarts the threshold analysis with inverted parameter.
 
 
@@ -178,7 +181,12 @@ def button_tab_main_threshold_clicked(app):
     app.check_tab_main_eventtimes.setEnabled(True)
     app.check_tab_main_thresholdbar.setEnabled(True)
     app.check_spikesorting.setEnabled(True)
-    # Following activations display spike-related contents on main plot.
+    # Following resets properly display spike-related contents on main plot at any point of UI event history.
+    # In order for plot display items to be refreshed, checks must be set to False then True again.
+    # Can now use this threshold-analysis-related function to perform analysis resets.
+    app.check_tab_main_spiketrain.setChecked(False)
+    app.check_tab_main_eventtimes.setChecked(False)
+    app.check_tab_main_thresholdbar.setChecked(False)
     app.check_tab_main_spiketrain.setChecked(True)
     app.check_tab_main_eventtimes.setChecked(True)
     app.check_tab_main_thresholdbar.setChecked(True)
@@ -217,7 +225,8 @@ def check_tab_main_thresholdbar_changed(app):
 
 
 def dropdown_tab_main_cluster_changed(app):
-    if app.dropdown_tab_main_cluster.currentText() == 'none':
+    if app.dropdown_tab_main_cluster.currentText() == 'none' or app.dropdown_tab_main_cluster.currentText() == '':
+        # Empty string for if dropdown items are cleared.
         app.channeldata.current_spike_indices = app.channeldata.spike_indices_all
         app.channeldata.selected_cluster_label = None
     else:
