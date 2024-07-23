@@ -20,7 +20,7 @@ def button_file_clicked(app):
 
     app.label_file.setText(file_data.filepath.split('/')[-1])
 
-    app.dropdown_channel.addItems([f'Ch {ch_id}' for ch_id in app.filedata.channels.keys()])    
+    app.dropdown_channel.addItems([f'Ch {ch_id}' for ch_id in app.filedata.channels.keys()])
 
 
 def dropdown_channel_changed(app):
@@ -38,6 +38,10 @@ def dropdown_channel_changed(app):
     app.button_tab_main_threshold.setEnabled(True)
     app.button_tab_features_lfpplot.setEnabled(True)
     app.button_tab_features_autocorrelationplot.setEnabled(True)
+
+    # Compute and display features
+    app.channeldata.compute_features_lfp()
+    misc.update_lfp_features_display(app)
 
     # Need to address what happens to data objects when different channel is selected.
 
@@ -71,7 +75,7 @@ def check_spikesorting_changed(app):
     cluster_colours = list(app.channeldata.spikesorting_clusters.keys())
     
     misc.remove_plot_items(plotitem=app.plot_tab_spikesorting, itemtype=pg.ScatterPlotItem)    # Reset plot every time triggered.
-    misc.reset_spikesorting_clusters_data(app)
+    app.channeldata.reset_spikesorting_clusters_data()
     if not check_state:
         app.channeldata.silhouette_score = None
         app.label_tab_features_qualitymetrics_silhouette_status.setText('')
@@ -91,7 +95,7 @@ def check_spikesorting_changed(app):
     
     current_signal = app.channeldata.get_current_signal()
     if app.channeldata.spike_matrix is None:    # Keep spike matrix in memory for efficiency.
-        app.channeldata.spike_matrix, app.channeldata.spike_indices_all = analysis.get_spike_matrix(current_signal, app.channeldata.spike_indices_all, int(1/1000*app.channeldata.fs))
+        app.channeldata.spike_matrix = analysis.get_spike_matrix(current_signal, app.channeldata.spike_indices_all, int(1/1000*app.channeldata.fs))
     pca_results, cluster_labels, silhouette_score = analysis.spike_sorting(app.channeldata.spike_matrix, num_clusters)
 
     for c in np.unique(cluster_labels):
@@ -101,16 +105,19 @@ def check_spikesorting_changed(app):
         
         app.channeldata.spikesorting_clusters[cluster_colours[c]] = app.channeldata.spike_indices_all[cluster_indices]
     
-    app.channeldata.silhouette_score = silhouette_score
-    app.label_tab_features_qualitymetrics_silhouette_status.setText(str(round(app.channeldata.silhouette_score, 2)))
-
-    existing_clusters = misc.get_existing_clusters(app)
+    existing_clusters = app.channeldata.get_existing_clusters()
     app.channeldata.selected_cluster_label = np.argmax([np.mean(app.channeldata.spikesorting_clusters[c]) for i, c in existing_clusters])
 
     cluster_colour_names = ['red', 'blue', 'green', 'cyan', 'magenta', 'yellow']
     app.dropdown_tab_main_cluster.clear()
     app.dropdown_tab_main_cluster.addItems(cluster_colour_names[:len(existing_clusters)] + ['none'])
     app.dropdown_tab_main_cluster.setCurrentIndex(app.channeldata.selected_cluster_label)
+
+    # Compute and display features
+    app.channeldata.compute_features_patterned()
+    app.channeldata.compute_features_qualitymetrics(ss=silhouette_score)
+    app.channeldata.compute_features_spiketrain()
+    misc.update_unit_features_display(app, ss=app.channeldata.features_qualitymetrics['SS'])
 
 
 def check_invertthreshold_changed(app):
@@ -191,6 +198,12 @@ def button_tab_main_threshold_clicked(app):
     app.check_tab_main_eventtimes.setChecked(True)
     app.check_tab_main_thresholdbar.setChecked(True)
 
+    # Compute and display features
+    app.channeldata.compute_features_patterned()
+    app.channeldata.compute_features_qualitymetrics(ss=None)    # Threshold operation always run when spike sorting is off.
+    app.channeldata.compute_features_spiketrain()
+    misc.update_unit_features_display(app)
+
 
 def check_tab_main_spiketrain_changed(app):
     check_state = app.check_tab_main_spiketrain.isChecked()
@@ -238,6 +251,13 @@ def dropdown_tab_main_cluster_changed(app):
     app.check_tab_main_eventtimes.setChecked(False)
     app.check_tab_main_spiketrain.setChecked(True)
     app.check_tab_main_eventtimes.setChecked(True)
+
+    # Compute and display features for newly selected cluster.
+    # SS already computed from previous spike sorting operation. Re-use.
+    app.channeldata.compute_features_patterned()
+    app.channeldata.compute_features_qualitymetrics(ss=app.channeldata.features_qualitymetrics['SS'])
+    app.channeldata.compute_features_spiketrain()
+    misc.update_unit_features_display(app, ss=app.channeldata.features_qualitymetrics['SS'])
 
 
 def dropdown_tab_spikesorting_clusters_changed(app):
