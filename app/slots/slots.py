@@ -121,7 +121,7 @@ def check_spikesorting_changed(app):
 
 
 def check_invertthreshold_changed(app):
-    app.entry_tab_main_madfactor.setText(str(-app.channeldata.threshold_factor))
+    # app.entry_tab_main_madfactor.setText(str(-app.channeldata.threshold_factor))
     app.channeldata.signal_inverted = app.check_invertthreshold.isChecked()
     app.check_tab_main_spiketrain.setChecked(False)
     app.check_tab_main_eventtimes.setChecked(False)
@@ -175,7 +175,12 @@ def button_tab_main_threshold_clicked(app):
     
     app.channeldata.threshold_factor = factor
     app.channeldata.threshold = threshold
-    app.label_tab_main_thresholdstatus.setText(f'Threshold: {round(app.channeldata.threshold, 3)} (Factor: {app.channeldata.threshold_factor})')
+
+    disp_threshold = app.channeldata.threshold
+    # Need to display a negative threshold when inverted. Keep scaler positive. Checkbox indicates inversion.
+    if app.channeldata.signal_inverted:
+        disp_threshold *= -1
+    app.label_tab_main_thresholdstatus.setText(f'Threshold: {round(disp_threshold, 3)} (Factor: {app.channeldata.threshold_factor})')
     
     spike_indices = analysis.get_spike_indices(current_signal, app.channeldata.threshold, app.channeldata.fs, app.channeldata.signal_inverted)
     app.channeldata.spike_indices_all = spike_indices
