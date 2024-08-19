@@ -67,6 +67,9 @@ def check_filtering_changed(app):
     app.button_tab_main_filtering.setEnabled(check_state)
 
     if not check_state:
+        if app.check_spikesorting.isChecked():
+            app.check_spikesorting.setChecked(False)
+
         app.channeldata.filtered_signal = None
         current_signal_item = app.plot2_tab_main.listDataItems()[0]
         app.plot2_tab_main.removeItem(current_signal_item)
@@ -129,12 +132,6 @@ def check_spikesorting_changed(app):
     app.dropdown_tab_main_cluster.addItems(cluster_colour_names[:len(existing_clusters)] + ['none'])
     app.dropdown_tab_main_cluster.setCurrentIndex(app.channeldata.selected_cluster_label)    # Setting index computes all features within corresponding slot.
 
-    # # Compute and display features
-    # app.channeldata.compute_features_patterned()
-    # app.channeldata.compute_features_qualitymetrics(ss=silhouette_score)
-    # app.channeldata.compute_features_spiketrain()
-    # misc.update_unit_features_display(app, ss=app.channeldata.features_qualitymetrics['SS'])
-
 
 def check_invertthreshold_changed(app):
     # app.entry_tab_main_madfactor.setText(str(-app.channeldata.threshold_factor))
@@ -148,6 +145,8 @@ def check_invertthreshold_changed(app):
 
 
 def button_tab_main_filtering_clicked(app):
+    if app.check_spikesorting.isChecked():
+        app.check_spikesorting.setChecked(False)
 
     hpcutoff = misc.check_convert_string(app.entry_tab_main_hpcutoff.text(), float)
     lpcutoff = misc.check_convert_string(app.entry_tab_main_lpcutoff.text(), float)
@@ -167,6 +166,8 @@ def button_tab_main_filtering_clicked(app):
     app.plot2_tab_main.removeItem(current_signal_item)
     app.plot2_tab_main.addItem(pg.PlotDataItem(np.arange(len(app.channeldata.filtered_signal)) / app.channeldata.fs, app.channeldata.filtered_signal, pen=pg.mkPen('cornflowerblue', width=1.5)))
 
+    button_tab_main_threshold_clicked(app)    # Runs after (re)filtering according to user-defined parameters.
+
 
 def button_tab_main_threshold_clicked(app):
 
@@ -174,6 +175,10 @@ def button_tab_main_threshold_clicked(app):
     
     if factor == None:
         # Reset threshold analysis if nonsense value inserted.
+        if app.check_spikesorting.isChecked():
+            app.check_spikesorting.setChecked(False)
+        app.check_spikesorting.setEnabled(False)
+
         app.channeldata.threshold = None
         app.channeldata.threshold_factor = None
         app.channeldata.spike_indices_all = None
@@ -181,9 +186,6 @@ def button_tab_main_threshold_clicked(app):
         app.check_tab_main_eventtimes.setChecked(False)
         app.check_tab_main_thresholdbar.setChecked(False)
         app.label_tab_main_thresholdstatus.setText(f'Threshold: None (Factor: None)')
-        if app.check_spikesorting.isChecked():
-            app.check_spikesorting.setChecked(False)
-        app.check_spikesorting.setEnabled(False)
         misc.update_unit_features_display(app, clear=True)    # Clear unit features.
         return
     
