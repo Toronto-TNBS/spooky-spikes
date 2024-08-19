@@ -28,12 +28,9 @@ def dropdown_channel_changed(app):
 
     if app.channeldata != None:    # If channel selected previously.
         # Reset analysis:
-        if app.check_spikesorting.isChecked():
-            app.check_spikesorting.setChecked(False)
-        if app.check_filtering.isChecked():
-            app.check_filtering.setChecked(False)
-        if app.check_invertthreshold.isChecked():
-            app.check_invertthreshold.setChecked(False)
+        app.check_spikesorting.setChecked(False)
+        app.check_filtering.setChecked(False)
+        app.check_invertthreshold.setChecked(False)
         
         app.entry_tab_main_madfactor.setText('')    # Set up for clearing operation by subsequent function.
         button_tab_main_threshold_clicked(app)    # After setup: resets plot disp checks, spikesorting, threshold, clears unit features.
@@ -56,8 +53,6 @@ def dropdown_channel_changed(app):
     app.channeldata.compute_features_lfp()
     misc.update_lfp_features_display(app)
 
-    # Need to address what happens to data objects when different channel is selected.
-
 
 def check_filtering_changed(app):
     check_state = app.check_filtering.isChecked()
@@ -67,8 +62,7 @@ def check_filtering_changed(app):
     app.button_tab_main_filtering.setEnabled(check_state)
 
     if not check_state:
-        if app.check_spikesorting.isChecked():
-            app.check_spikesorting.setChecked(False)
+        app.check_spikesorting.setChecked(False)
 
         app.channeldata.filtered_signal = None
         current_signal_item = app.plot2_tab_main.listDataItems()[0]
@@ -104,8 +98,6 @@ def check_spikesorting_changed(app):
         app.check_tab_main_eventtimes.setChecked(False)
         app.check_tab_main_spiketrain.setChecked(True)
         app.check_tab_main_eventtimes.setChecked(True)
-
-        # Need to now get features for all spikes...
         return
     
     num_clusters = misc.check_convert_string(app.dropdown_tab_spikesorting_clusters.currentText(), int)
@@ -134,19 +126,13 @@ def check_spikesorting_changed(app):
 
 
 def check_invertthreshold_changed(app):
-    # app.entry_tab_main_madfactor.setText(str(-app.channeldata.threshold_factor))
+    app.check_spikesorting.setChecked(False)
     app.channeldata.signal_inverted = app.check_invertthreshold.isChecked()
-    app.check_tab_main_spiketrain.setChecked(False)
-    app.check_tab_main_eventtimes.setChecked(False)
-    app.check_tab_main_thresholdbar.setChecked(False)
-
-    app.check_spikesorting.setChecked(False)    # Turn off spike sorting.
-    button_tab_main_threshold_clicked(app)    # Restarts the threshold analysis with inverted parameter.
+    button_tab_main_threshold_clicked(app)    # Restarts the threshold analysis with inverted parameter. Displays results on main plot.
 
 
 def button_tab_main_filtering_clicked(app):
-    if app.check_spikesorting.isChecked():
-        app.check_spikesorting.setChecked(False)
+    app.check_spikesorting.setChecked(False)
 
     hpcutoff = misc.check_convert_string(app.entry_tab_main_hpcutoff.text(), float)
     lpcutoff = misc.check_convert_string(app.entry_tab_main_lpcutoff.text(), float)
@@ -171,12 +157,13 @@ def button_tab_main_filtering_clicked(app):
 
 def button_tab_main_threshold_clicked(app):
 
+    app.check_spikesorting.setChecked(False)    # Does not run function if already OFF.
+
     factor = misc.check_convert_string(app.entry_tab_main_madfactor.text(), float)
     
     if factor == None:
         # Reset threshold analysis if nonsense value inserted.
-        if app.check_spikesorting.isChecked():
-            app.check_spikesorting.setChecked(False)
+        app.check_spikesorting.setChecked(False)
         app.check_spikesorting.setEnabled(False)
 
         app.channeldata.threshold = None
