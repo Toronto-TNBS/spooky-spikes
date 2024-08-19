@@ -92,6 +92,8 @@ class ChannelData():
 
     def compute_features_qualitymetrics(self, ss):
         # SS must be computed and assigned separately as it is required asynchronously with the rest of the metrics.
+        if ss == None:
+            ss = ''
         self.features_qualitymetrics['SNR'] = analysis.get_SNR(self.raw_signal, self.current_spike_indices, self.fs)
         self.features_qualitymetrics['ISI'] = analysis.get_pISIv(self.current_spike_indices, self.fs)
         self.features_qualitymetrics['SS'] = ss

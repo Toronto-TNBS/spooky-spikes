@@ -26,12 +26,25 @@ def button_file_clicked(app):
 def dropdown_channel_changed(app):
     ch_id = int(app.dropdown_channel.currentText().split(' ')[-1])
 
-    if app.channeldata != None:
-        app.channeldata.filtered_signal = None    # Reset filter settings of previously selected channel if exists.
+    if app.channeldata != None:    # If channel selected previously.
+        # Reset analysis:
+        if app.check_spikesorting.isChecked():
+            app.check_spikesorting.setChecked(False)
+        if app.check_filtering.isChecked():
+            app.check_filtering.setChecked(False)
+        if app.check_invertthreshold.isChecked():
+            app.check_invertthreshold.setChecked(False)
+        
+        app.entry_tab_main_madfactor.setText('')    # Set up for clearing operation by subsequent function.
+        button_tab_main_threshold_clicked(app)    # After setup: resets plot disp checks, spikesorting, threshold, clears unit features.
+        
+        misc.remove_plot_items(app.plot2_tab_main, pg.PlotDataItem)
+        app.channeldata.reset_channel()    # Reset full analysis for currently-selected channel. Run at end since above functions need existing values.
+
 
     app.channeldata = app.filedata.channels[ch_id]
     
-    app.plot2_tab_main.addItem(pg.PlotDataItem(np.arange(len(app.channeldata.raw_signal)) / app.channeldata.fs, app.channeldata.raw_signal, pen=pg.mkPen('cornflowerblue', width=1.5)))
+    app.plot2_tab_main.addItem(pg.PlotDataItem(app.channeldata.get_time_vector(), app.channeldata.raw_signal, pen=pg.mkPen('cornflowerblue', width=1.5)))
     
     app.check_filtering.setEnabled(True)
     app.entry_tab_main_madfactor.setEnabled(True)
@@ -77,9 +90,8 @@ def check_spikesorting_changed(app):
     misc.remove_plot_items(plotitem=app.plot_tab_spikesorting, itemtype=pg.ScatterPlotItem)    # Reset plot every time triggered.
     app.channeldata.reset_spikesorting_clusters_data()
     if not check_state:
-        app.channeldata.silhouette_score = None
-        app.label_tab_features_qualitymetrics_silhouette_status.setText('')
-        app.dropdown_tab_main_cluster.clear()
+        app.channeldata.features_qualitymetrics['SS'] = None
+        app.dropdown_tab_main_cluster.clear()    # This line triggers the dropdown function. Initiates computation with all spikes.
         app.channeldata.spike_matrix = None    # Reset spike matrix for new spike sorting operation.
 
         # Reset to all spikes.
@@ -89,6 +101,8 @@ def check_spikesorting_changed(app):
         app.check_tab_main_eventtimes.setChecked(False)
         app.check_tab_main_spiketrain.setChecked(True)
         app.check_tab_main_eventtimes.setChecked(True)
+
+        # Need to now get features for all spikes...
         return
     
     num_clusters = misc.check_convert_string(app.dropdown_tab_spikesorting_clusters.currentText(), int)
@@ -108,16 +122,18 @@ def check_spikesorting_changed(app):
     existing_clusters = app.channeldata.get_existing_clusters()
     app.channeldata.selected_cluster_label = np.argmax([np.mean(app.channeldata.spikesorting_clusters[c]) for i, c in existing_clusters])
 
+    app.channeldata.features_qualitymetrics['SS'] = silhouette_score    # Need to set this before setting cluster index in dropdown, which performs computation.
+
     cluster_colour_names = ['red', 'blue', 'green', 'cyan', 'magenta', 'yellow']
     app.dropdown_tab_main_cluster.clear()
     app.dropdown_tab_main_cluster.addItems(cluster_colour_names[:len(existing_clusters)] + ['none'])
-    app.dropdown_tab_main_cluster.setCurrentIndex(app.channeldata.selected_cluster_label)
+    app.dropdown_tab_main_cluster.setCurrentIndex(app.channeldata.selected_cluster_label)    # Setting index computes all features within corresponding slot.
 
-    # Compute and display features
-    app.channeldata.compute_features_patterned()
-    app.channeldata.compute_features_qualitymetrics(ss=silhouette_score)
-    app.channeldata.compute_features_spiketrain()
-    misc.update_unit_features_display(app, ss=app.channeldata.features_qualitymetrics['SS'])
+    # # Compute and display features
+    # app.channeldata.compute_features_patterned()
+    # app.channeldata.compute_features_qualitymetrics(ss=silhouette_score)
+    # app.channeldata.compute_features_spiketrain()
+    # misc.update_unit_features_display(app, ss=app.channeldata.features_qualitymetrics['SS'])
 
 
 def check_invertthreshold_changed(app):
@@ -165,7 +181,10 @@ def button_tab_main_threshold_clicked(app):
         app.check_tab_main_eventtimes.setChecked(False)
         app.check_tab_main_thresholdbar.setChecked(False)
         app.label_tab_main_thresholdstatus.setText(f'Threshold: None (Factor: None)')
+        if app.check_spikesorting.isChecked():
+            app.check_spikesorting.setChecked(False)
         app.check_spikesorting.setEnabled(False)
+        misc.update_unit_features_display(app, clear=True)    # Clear unit features.
         return
     
     current_signal = app.channeldata.get_current_signal()
