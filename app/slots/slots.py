@@ -1,10 +1,10 @@
 from PySide6.QtWidgets import *
 from PySide6 import QtCore
 from PySide6 import QtGui
-from slots.backend import data
-from slots.backend import files
-from slots.backend import analysis
-from slots.backend import miscellaneous as misc
+from app.slots.backend import data
+from app.slots.backend import files
+from app.slots.backend import analysis
+from app.slots.backend import miscellaneous as misc
 import numpy as np
 import pyqtgraph as pg
 

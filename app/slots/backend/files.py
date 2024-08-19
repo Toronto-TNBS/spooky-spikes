@@ -1,6 +1,6 @@
 from sonpy import lib as son
 import math
-from slots.backend import data
+from app.slots.backend import data
 
 
 def load_spike2(filepath):

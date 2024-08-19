@@ -3,7 +3,7 @@ from PySide6 import QtCore
 from PySide6.QtCore import Slot
 import pyqtgraph as pg
 import numpy as np
-from slots import slots
+from app.slots import slots
 
 with open(f'{__file__[:-7]}/styles/styles.css', 'r') as file:
     STYLESHEET = file.read()
@@ -496,7 +496,6 @@ class App(QApplication):
     
 
     def init_tab_spikesorting_plot(self):
-        data = np.random.normal(0, 1, int(1e2))
         layout = pg.GraphicsLayoutWidget()
         plot = layout.addPlot(row=0, col=0)
         
@@ -505,6 +504,3 @@ class App(QApplication):
         plot.getAxis('left').setLabel('Principal Component 2')
 
         return plot, layout
-
-
-App()

@@ -1,5 +1,5 @@
 import numpy as np
-from slots.backend import analysis
+from app.slots.backend import analysis
 
 class ChannelData():
 
