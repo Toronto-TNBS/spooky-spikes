@@ -7,6 +7,9 @@ from app.slots.backend import analysis
 from app.slots.backend import miscellaneous as misc
 import numpy as np
 import pyqtgraph as pg
+from sklearn.mixture import GaussianMixture
+import matplotlib.pyplot as plt
+from scipy.signal import hilbert
 
 
 def button_file_clicked(app):
@@ -201,6 +204,9 @@ def button_tab_main_threshold_clicked(app):
     app.check_tab_main_eventtimes.setEnabled(True)
     app.check_tab_main_thresholdbar.setEnabled(True)
     app.check_spikesorting.setEnabled(True)
+
+    app.button_tab_features_isiplot.setEnabled(True)
+
     # Following resets properly display spike-related contents on main plot at any point of UI event history.
     # In order for plot display items to be refreshed, checks must be set to False then True again.
     # Can now use this threshold-analysis-related function to perform analysis resets.
@@ -275,3 +281,45 @@ def dropdown_tab_main_cluster_changed(app):
 
 def dropdown_tab_spikesorting_clusters_changed(app):
     check_spikesorting_changed(app)
+
+
+def button_tab_features_isiplot_clicked(app):    
+    
+    spike_times = app.channeldata.get_time_vector()[np.array(list(app.channeldata.current_spike_indices), dtype=int)]
+    isi = np.log(np.diff(spike_times))
+
+    X = np.ravel(isi)
+    X = np.ravel(isi).reshape(-1, 1)
+    M_best = GaussianMixture(n_components=2, covariance_type='spherical').fit(X)
+    x = np.linspace(np.log(1.5/1000), 0, 10000)
+    y = np.exp(M_best.score_samples(x.reshape(-1, 1)))
+    y_individual = M_best.predict_proba(x.reshape(-1, 1)) *  y[:, np.newaxis]
+
+    densities, edges, _ = plt.hist(isi, bins=20, density=True)
+
+    layout = pg.GraphicsLayoutWidget()
+    plot = layout.addPlot(row=0, col=0)
+    plot.addLegend(offset=(-1, 1))
+
+    plot.addItem(pg.BarGraphItem(x0=edges[:-1], width=np.diff(edges), height=densities, brush=pg.mkBrush('#e24a33')))
+    plot.addItem(pg.PlotDataItem(x, y, name='Gaussian Mixture', pen=pg.mkPen('cornflowerblue', width=2)))
+    plot.addItem(pg.PlotDataItem(x, y_individual[:, 0], pen=pg.mkPen('k', style=QtCore.Qt.DashLine, width=2)))
+    plot.addItem(pg.PlotDataItem(x, y_individual[:, 1], pen=pg.mkPen('k', style=QtCore.Qt.DashLine, width=2)))
+
+    plot.getAxis('left').setLabel('Density')
+    plot.getAxis('bottom').setLabel('log(ISI)')
+    plot.setTitle('Log-Interspike-Interval Histogram')
+    layout.setBackground('white')
+
+    app.generate_plot_window(layout, 'isi')
+
+
+def button_tab_features_spikeoscillationsplot_clicked(app):
+    pass
+
+def button_tab_features_lfpplot_clicked(app):
+    pass
+
+
+def button_tab_features_autocorrelationplot_clicked(app):
+    pass

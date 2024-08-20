@@ -18,6 +18,11 @@ class App(QApplication):
         self.filedata = None    # Loaded file data.
         self.channeldata = None    # Selected channel data.
         self.threshold_bar_item = None   # pg.InfiniteLine objects of threshold bar. Not stored in PlotItem object, so must track.
+        # Open windows must remain within event loop to remain open. Must store them somewhere in class inheriting QApplication.
+        self.open_plot_windows = {'isi': None,
+                                  'spikeoscillations': None,
+                                  'lfp': None,
+                                  'autocorrelation': None}
 
         self.setStyleSheet(STYLESHEET)
 
@@ -297,6 +302,7 @@ class App(QApplication):
         self.button_tab_features_isiplot = QPushButton('Generate')
         self.button_tab_features_isiplot.setEnabled(False)
         self.grid_tab_features_isiplot.addWidget(self.button_tab_features_isiplot, 1, 0)
+        self.button_tab_features_isiplot.clicked.connect(lambda: slots.button_tab_features_isiplot_clicked(self))
 
         # Features Spiketrain Oscillations Frame
         self.subheader_tab_features_spiketrain = QLabel('Spiketrain Oscillations')
@@ -358,6 +364,7 @@ class App(QApplication):
         self.button_tab_features_spikeoscillationsplot = QPushButton('Generate')
         self.button_tab_features_spikeoscillationsplot.setEnabled(False)
         self.grid_tab_features_spikeoscillationsplot.addWidget(self.button_tab_features_spikeoscillationsplot, 1, 0)
+        self.button_tab_features_spikeoscillationsplot.clicked.connect(lambda: slots.button_tab_features_spikeoscillationsplot_clicked(self))
 
         # Features LFP Power Frame
         self.subheader_tab_features_lfp = QLabel('LFP Power')
@@ -404,6 +411,7 @@ class App(QApplication):
         self.button_tab_features_lfpplot = QPushButton('Generate')
         self.button_tab_features_lfpplot.setEnabled(False)
         self.grid_tab_features_lfpplot.addWidget(self.button_tab_features_lfpplot, 1, 0)
+        self.button_tab_features_lfpplot.clicked.connect(lambda: slots.button_tab_features_lfpplot_clicked(self))
 
         # Features Autocorrelation Frame
         self.subheader_tab_features_autocorrelation = QLabel('Autocorrelation')
@@ -419,6 +427,7 @@ class App(QApplication):
         self.button_tab_features_autocorrelationplot = QPushButton('Generate')
         self.button_tab_features_autocorrelationplot.setEnabled(False)
         self.grid_tab_features_autocorrelationplot.addWidget(self.button_tab_features_autocorrelationplot, 1, 0)
+        self.button_tab_features_autocorrelationplot.clicked.connect(lambda: slots.button_tab_features_autocorrelationplot_clicked(self))
 
         self.grid_tab_features.setRowStretch(self.grid_tab_features.rowCount(), 1)    # Stretch empty row at end to fill bottom space.
 
@@ -504,3 +513,12 @@ class App(QApplication):
         plot.getAxis('left').setLabel('Principal Component 2')
 
         return plot, layout
+    
+
+    def generate_plot_window(self, plot_layout, plot_type):
+        window = QWidget()
+        grid = QGridLayout()
+        window.setLayout(grid)
+        grid.addWidget(plot_layout, 0, 0)
+        window.show()
+        self.open_plot_windows[plot_type] = window
