@@ -140,7 +140,7 @@ def get_spiketrain_power(spike_indices, fs):
     return theta, alpha, lowbeta, highbeta
 
 
-def get_spiketrain_burstduration(spike_indices, fs):
+def get_spiketrain_burstduration(spike_indices, fs, waves=False):
 
     def spiketrain_to_binary(spiketimes, sampling_rate):
         num_timesteps = int(np.ceil(np.max(spiketimes) * sampling_rate))
@@ -217,6 +217,11 @@ def get_spiketrain_burstduration(spike_indices, fs):
                                                                                                     12, 21)
     spike_oscillations_high_beta_wave, spike_oscillations_high_beta_times, high_beta_wave_power = waveform_spiketrain_oscillation(
         events, 21, 30)
+    
+    if waves:
+        return (spike_oscillations_theta_wave, spike_oscillations_alpha_wave, spike_oscillations_low_beta_wave, spike_oscillations_high_beta_wave), \
+        (spike_oscillations_theta_times, spike_oscillations_alpha_times, spike_oscillations_low_beta_times, spike_oscillations_high_beta_times), \
+        burst_threshold(events, data_type='spiketrain')
     
     spiketrain_burst_threshold = burst_threshold(events, data_type='spiketrain')
 

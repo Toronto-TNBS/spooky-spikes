@@ -50,7 +50,6 @@ def dropdown_channel_changed(app):
     app.entry_tab_main_madfactor.setEnabled(True)
     app.button_tab_main_threshold.setEnabled(True)
     app.button_tab_features_lfpplot.setEnabled(True)
-    app.button_tab_features_autocorrelationplot.setEnabled(True)
 
     # Compute and display features
     app.channeldata.compute_features_lfp()
@@ -169,6 +168,10 @@ def button_tab_main_threshold_clicked(app):
         app.check_spikesorting.setChecked(False)
         app.check_spikesorting.setEnabled(False)
 
+        app.button_tab_features_isiplot.setEnabled(False)
+        app.button_tab_features_spikeoscillationsplot.setEnabled(False)
+        app.button_tab_features_autocorrelationplot.setEnabled(False)
+
         app.channeldata.threshold = None
         app.channeldata.threshold_factor = None
         app.channeldata.spike_indices_all = None
@@ -206,6 +209,8 @@ def button_tab_main_threshold_clicked(app):
     app.check_spikesorting.setEnabled(True)
 
     app.button_tab_features_isiplot.setEnabled(True)
+    app.button_tab_features_spikeoscillationsplot.setEnabled(True)
+    app.button_tab_features_autocorrelationplot.setEnabled(True)
 
     # Following resets properly display spike-related contents on main plot at any point of UI event history.
     # In order for plot display items to be refreshed, checks must be set to False then True again.
@@ -315,7 +320,133 @@ def button_tab_features_isiplot_clicked(app):
 
 
 def button_tab_features_spikeoscillationsplot_clicked(app):
-    pass
+
+    waves, times, burst_threshold = analysis.get_spiketrain_burstduration(app.channeldata.current_spike_indices, app.channeldata.fs, waves=True)
+    spike_oscillations_theta_wave = waves[0]
+    spike_oscillations_alpha_wave = waves[1]
+    spike_oscillations_low_beta_wave = waves[2]
+    spike_oscillations_high_beta_wave = waves[3]
+    spike_oscillations_theta_times = times[0]
+    spike_oscillations_alpha_times = times[1]
+    spike_oscillations_low_beta_times = times[2]
+    spike_oscillations_high_beta_times = times[3]
+
+    burst_theta = np.abs(hilbert(spike_oscillations_theta_wave))
+    burst_alpha = np.abs(hilbert(spike_oscillations_alpha_wave))
+    burst_low_beta = np.abs(hilbert(spike_oscillations_low_beta_wave))
+    burst_high_beta = np.abs(hilbert(spike_oscillations_high_beta_wave))
+
+    layout = pg.GraphicsLayoutWidget()
+    plot0 = layout.addPlot(row=0, col=0)
+    plot1 = layout.addPlot(row=1, col=0)
+    plot2 = layout.addPlot(row=2, col=0)
+    plot3 = layout.addPlot(row=3, col=0)
+    # Need to make it such that they share common axes. Largest range gets linked.
+    wave_colour = '#e24a33'
+
+    plot0.addItem(pg.PlotDataItem(spike_oscillations_theta_times, spike_oscillations_theta_wave, pen=pg.mkPen(wave_colour, width=1.5)))
+    plot1.addItem(pg.PlotDataItem(spike_oscillations_alpha_times, spike_oscillations_alpha_wave, pen=pg.mkPen(wave_colour, width=1.5)))
+    plot2.addItem(pg.PlotDataItem(spike_oscillations_low_beta_times, spike_oscillations_low_beta_wave, pen=pg.mkPen(wave_colour, width=1.5)))
+    plot3.addItem(pg.PlotDataItem(spike_oscillations_high_beta_times, spike_oscillations_high_beta_wave, pen=pg.mkPen(wave_colour, width=1.5)))
+
+    plot0.addItem(pg.PlotDataItem(spike_oscillations_theta_times, burst_theta, pen=pg.mkPen('cornflowerblue', width=1.5)))
+    plot1.addItem(pg.PlotDataItem(spike_oscillations_alpha_times, burst_alpha, pen=pg.mkPen('cornflowerblue', width=1.5)))
+    plot2.addItem(pg.PlotDataItem(spike_oscillations_low_beta_times, burst_low_beta, pen=pg.mkPen('cornflowerblue', width=1.5)))
+    plot3.addItem(pg.PlotDataItem(spike_oscillations_high_beta_times, burst_high_beta, pen=pg.mkPen('cornflowerblue', width=1.5)))
+
+    plot0.addItem(pg.InfiniteLine(pos=burst_threshold, angle=0, pen=pg.mkPen('k', width=1.5)))
+    plot1.addItem(pg.InfiniteLine(pos=burst_threshold, angle=0, pen=pg.mkPen('k', width=1.5)))
+    plot2.addItem(pg.InfiniteLine(pos=burst_threshold, angle=0, pen=pg.mkPen('k', width=1.5)))
+    plot3.addItem(pg.InfiniteLine(pos=burst_threshold, angle=0, pen=pg.mkPen('k', width=1.5)))
+
+    def boundary_plotitems(times, wave, start, duration):
+        y_range = [np.min(wave), np.max(wave)]
+        x0 = times[start]
+        x1 = times[start] + duration
+        return pg.PlotDataItem([x0, x0], y_range), pg.PlotDataItem([x1, x1], y_range)
+
+    above_threshold_theta = burst_theta > burst_threshold
+    cross_indices_theta = np.where(np.diff(above_threshold_theta))[0]
+    if len(cross_indices_theta) > 1:
+        if burst_theta[cross_indices_theta[0] + 1] <= burst_threshold:
+            # If so, remove the first index from cross_indices
+            cross_indices_theta = cross_indices_theta[1:]
+        for start, end in zip(cross_indices_theta[:-1:2], cross_indices_theta[1::2]):
+            duration = spike_oscillations_theta_times[end] - spike_oscillations_theta_times[
+                start]  # Calculate the duration of the burst
+            if duration > 0.1:
+                x0_item, x1_item = boundary_plotitems(spike_oscillations_theta_times, spike_oscillations_theta_wave, start, duration)
+                plot0.addItem(pg.FillBetweenItem(x0_item, x1_item, brush=pg.mkBrush('lightsteelblue')))
+
+    above_threshold_alpha = burst_alpha > burst_threshold
+    cross_indices_alpha = np.where(np.diff(above_threshold_alpha))[0]
+    if len(cross_indices_alpha) > 1:
+        if burst_alpha[cross_indices_alpha[0] + 1] <= burst_threshold:
+            # If so, remove the first index from cross_indices
+            cross_indices_alpha = cross_indices_alpha[1:]
+        for start, end in zip(cross_indices_alpha[:-1:2], cross_indices_alpha[1::2]):
+            duration = spike_oscillations_alpha_times[end] - spike_oscillations_alpha_times[
+                start]  # Calculate the duration of the burst
+            if duration > 0.1:
+                x0_item, x1_item = boundary_plotitems(spike_oscillations_alpha_times, spike_oscillations_alpha_wave, start, duration)
+                plot1.addItem(pg.FillBetweenItem(x0_item, x1_item, brush=pg.mkBrush('lightsteelblue')))
+
+    above_threshold_low_beta = burst_low_beta > burst_threshold
+    cross_indices_low_beta = np.where(np.diff(above_threshold_low_beta))[0]
+    if len(cross_indices_low_beta) > 1:
+        if burst_low_beta[cross_indices_low_beta[0] + 1] <= burst_threshold:
+            # If so, remove the first index from cross_indices
+            cross_indices_low_beta = cross_indices_low_beta[1:]
+        for start, end in zip(cross_indices_low_beta[:-1:2], cross_indices_low_beta[1::2]):
+            duration = spike_oscillations_low_beta_times[end] - spike_oscillations_low_beta_times[
+                start]  # Calculate the duration of the burst
+            if duration > 0.1:
+                x0_item, x1_item = boundary_plotitems(spike_oscillations_low_beta_times, spike_oscillations_low_beta_wave, start, duration)
+                plot2.addItem(pg.FillBetweenItem(x0_item, x1_item, brush=pg.mkBrush('lightsteelblue')))
+
+    above_threshold_high_beta = burst_high_beta > burst_threshold
+    cross_indices_high_beta = np.where(np.diff(above_threshold_high_beta))[0]
+    if len(cross_indices_high_beta) > 1:
+        if burst_high_beta[cross_indices_high_beta[0] + 1] <= burst_threshold:
+            # If so, remove the first index from cross_indices
+            cross_indices_high_beta = cross_indices_high_beta[1:]
+        for start, end in zip(cross_indices_high_beta[:-1:2], cross_indices_high_beta[1::2]):
+            duration = spike_oscillations_high_beta_times[end] - spike_oscillations_high_beta_times[
+                start]  # Calculate the duration of the burst
+            if duration > 0.1:
+                x0_item, x1_item = boundary_plotitems(spike_oscillations_high_beta_times, spike_oscillations_high_beta_wave, start, duration)
+                plot3.addItem(pg.FillBetweenItem(x0_item, x1_item, brush=pg.mkBrush('lightsteelblue')))
+
+    plot3.getAxis('bottom').setLabel('Time (s)')
+    plot0.getAxis('left').setLabel('Theta')
+    plot1.getAxis('left').setLabel('Alpha')
+    plot2.getAxis('left').setLabel('Low Beta')
+    plot3.getAxis('left').setLabel('High Beta')
+    plot0.setTitle('Spiketrain Oscillations Waveforms')
+    layout.setBackground('white')
+
+    # ymax = np.max([spike_oscillations_theta_wave, spike_oscillations_alpha_wave, spike_oscillations_low_beta_wave, spike_oscillations_high_beta_wave])
+    # ymin = np.min([spike_oscillations_theta_wave, spike_oscillations_alpha_wave, spike_oscillations_low_beta_wave, spike_oscillations_high_beta_wave])
+    # xmin = spike_oscillations_theta_times[0]
+    # xmax = spike_oscillations_theta_times[-1]
+    # # plot0.setXRange(xmin, xmax)
+    # plot1.setXRange(xmin, xmax)
+    # plot2.setXRange(xmin, xmax)
+    # plot3.setXRange(xmin, xmax)
+    # plot0.setYRange(ymin, ymax)
+    # plot1.setYRange(ymin, ymax)
+    # plot2.setYRange(ymin, ymax)
+    # plot3.setYRange(ymin, ymax)
+
+    plot1.setXLink(plot0)
+    plot2.setXLink(plot0)
+    plot3.setXLink(plot0)
+    plot1.setYLink(plot0)
+    plot2.setYLink(plot0)
+    plot3.setYLink(plot0)
+
+    app.generate_plot_window(layout, 'spikeoscillations')
+
 
 def button_tab_features_lfpplot_clicked(app):
     pass
