@@ -142,27 +142,6 @@ def get_spiketrain_power(spike_indices, fs):
 
 def get_spiketrain_burstduration(spike_indices, fs, waves=False):
 
-    def spiketrain_to_binary(spiketimes, sampling_rate):
-        num_timesteps = int(np.ceil(np.max(spiketimes) * sampling_rate))
-        binary_sequence = np.zeros(num_timesteps)
-        spike_indices = (spiketimes * sampling_rate).astype(int)
-        valid_spike_indices = spike_indices[spike_indices < num_timesteps]
-        binary_sequence[valid_spike_indices] = 1
-        return binary_sequence
-
-    def waveform_spiketrain_oscillation(spike_train, low_freq, high_freq):
-
-        binary_sequence = spiketrain_to_binary(spike_train, 500)
-
-        spiketrain_waveform = ff.butter(binary_sequence, low_freq, high_freq, 500, order=4, zero_phase=True)
-
-        spiketrain_waveform = spiketrain_waveform - np.mean(spiketrain_waveform)
-        freqs, psd = sps.welch(spiketrain_waveform, 500, nperseg=500 * 2, scaling='density')
-        power = np.max(psd)
-        time = np.arange(0, len(spiketrain_waveform)) / 500
-
-        return spiketrain_waveform, time, 10 * math.log10(power)
-
     def get_waveform_envelope(waveform, smooth=False):
         burst = np.abs(sps.hilbert(waveform))
         if smooth > 0:
@@ -172,19 +151,6 @@ def get_spiketrain_burstduration(spike_indices, fs, waves=False):
             return burst
         else:
             return burst
-    
-    def burst_threshold(data, fs_lfp=None, data_type='lfp'):
-        if data_type == 'lfp':
-            assert fs_lfp is not None, 'fs_lfp must be provided for lfp data'
-            gamma_envelopes = [np.abs(sps.hilbert(ff.butter(data, f1, f2, fs_lfp, order=8, zero_phase=True)))
-                               for f1, f2 in zip(range(45, 50), range(51, 56))]
-        elif data_type == 'spiketrain':
-            gamma_envelopes = [np.abs(sps.hilbert(waveform_spiketrain_oscillation(data, f1, f2)[0]))
-                               for f1, f2 in zip(range(45, 50), range(51, 56))]
-        else:
-            raise ValueError('data_type must be either "lfp" or "spiketrain"')
-        median_values = [np.median(data[sps.argrelextrema(data, np.less)]) for data in gamma_envelopes]
-        return 4 * np.mean(median_values)
     
     def burst_features(time_ds, burst, burst_threshold):
         above_threshold = burst > burst_threshold
@@ -243,9 +209,6 @@ def get_spiketrain_burstduration(spike_indices, fs, waves=False):
 
 
 def get_lfp_metrics(raw_signal, fs, fs_lfp=250):
-
-    def get_LFP_data(raw_data, fs, fs_lfp):
-        return ds.run(raw_data, fs, fs_lfp)
     
     def get_LFP_power(raw_data_lfp, fs_lfp, fFrom, fTo):
         filtered_data = ff.butter(raw_data_lfp, fFrom, fTo, fs_lfp, order=8, zero_phase=True)
@@ -271,3 +234,46 @@ def get_lfp_metrics(raw_signal, fs, fs_lfp=250):
 
     return (theta_power, alpha_power, lowbeta_power, highbeta_power), \
     (theta_wave, alpha_wave, lowbeta_wave, highbeta_wave), (psd_freqs, psd_power)
+
+
+def waveform_spiketrain_oscillation(spike_train, low_freq, high_freq):
+    # For internal computations.
+
+    def spiketrain_to_binary(spiketimes, sampling_rate):
+        num_timesteps = int(np.ceil(np.max(spiketimes) * sampling_rate))
+        binary_sequence = np.zeros(num_timesteps)
+        spike_indices = (spiketimes * sampling_rate).astype(int)
+        valid_spike_indices = spike_indices[spike_indices < num_timesteps]
+        binary_sequence[valid_spike_indices] = 1
+        return binary_sequence
+
+    binary_sequence = spiketrain_to_binary(spike_train, 500)
+
+    spiketrain_waveform = ff.butter(binary_sequence, low_freq, high_freq, 500, order=4, zero_phase=True)
+
+    spiketrain_waveform = spiketrain_waveform - np.mean(spiketrain_waveform)
+    freqs, psd = sps.welch(spiketrain_waveform, 500, nperseg=500 * 2, scaling='density')
+    power = np.max(psd)
+    time = np.arange(0, len(spiketrain_waveform)) / 500
+
+    return spiketrain_waveform, time, 10 * math.log10(power)
+
+
+def burst_threshold(data, fs_lfp=None, data_type='lfp'):
+    # This is for when only burst threshold is necessary, and not spiketrain datatype.
+    
+    if data_type == 'lfp':
+        assert fs_lfp is not None, 'fs_lfp must be provided for lfp data'
+        gamma_envelopes = [np.abs(sps.hilbert(ff.butter(data, f1, f2, fs_lfp, order=8, zero_phase=True)))
+                            for f1, f2 in zip(range(45, 50), range(51, 56))]
+    elif data_type == 'spiketrain':
+        gamma_envelopes = [np.abs(sps.hilbert(waveform_spiketrain_oscillation(data, f1, f2)[0]))
+                            for f1, f2 in zip(range(45, 50), range(51, 56))]
+    else:
+        raise ValueError('data_type must be either "lfp" or "spiketrain"')
+    median_values = [np.median(data[sps.argrelextrema(data, np.less)]) for data in gamma_envelopes]
+    return 4 * np.mean(median_values)
+
+
+def get_LFP_data(raw_data, fs, fs_lfp):
+        return ds.run(raw_data, fs, fs_lfp)

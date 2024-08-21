@@ -515,8 +515,9 @@ class App(QApplication):
         return plot, layout
     
 
-    def generate_plot_window(self, plot_layout, plot_type):
+    def generate_plot_window(self, plot_layout, plot_type, title):
         window = QWidget()
+        window.setWindowTitle(title)
         grid = QGridLayout()
         window.setLayout(grid)
         grid.addWidget(plot_layout, 0, 0)

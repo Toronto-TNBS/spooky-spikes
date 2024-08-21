@@ -1,5 +1,6 @@
 from PySide6 import QtGui
 import pyqtgraph as pg
+import numpy as np
 
 
 def check_convert_string(string, type):
@@ -66,3 +67,10 @@ def update_lfp_features_display(app):
      app.label_tab_features_lfp_alphapower_status.setText(str(round(app.channeldata.features_lfp['Power']['Alpha'], 2)))
      app.label_tab_features_lfp_lowbetapower_status.setText(str(round(app.channeldata.features_lfp['Power']['LowBeta'], 2)))
      app.label_tab_features_lfp_highbetapower_status.setText(str(round(app.channeldata.features_lfp['Power']['HighBeta'], 2)))
+
+    
+def boundary_plotitems(times, wave, start, duration):
+    y_range = [np.min(wave), np.max(wave)]
+    x0 = times[start]
+    x1 = times[start] + duration
+    return pg.PlotDataItem([x0, x0], y_range), pg.PlotDataItem([x1, x1], y_range)
