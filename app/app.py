@@ -19,10 +19,10 @@ class App(QApplication):
         self.channeldata = None    # Selected channel data.
         self.threshold_bar_item = None   # pg.InfiniteLine objects of threshold bar. Not stored in PlotItem object, so must track.
         # Open windows must remain within event loop to remain open. Must store them somewhere in class inheriting QApplication.
-        self.open_plot_windows = {'isi': None,
-                                  'spikeoscillations': None,
-                                  'lfp': None,
-                                  'autocorrelation': None}
+        self.open_plot_windows = {'Inter-spike Intervals': None,
+                                  'Spiketrain Oscillations': None,
+                                  'LFP Oscillations': None,
+                                  'Autocorrelation': None}
 
         self.setStyleSheet(STYLESHEET)
 
@@ -515,9 +515,9 @@ class App(QApplication):
         return plot, layout
     
 
-    def generate_plot_window(self, plot_layout, plot_type, title):
+    def generate_plot_window(self, plot_layout, plot_type):
         window = QWidget()
-        window.setWindowTitle(title)
+        window.setWindowTitle(plot_type)
         grid = QGridLayout()
         window.setLayout(grid)
         grid.addWidget(plot_layout, 0, 0)

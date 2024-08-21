@@ -10,6 +10,7 @@ import pyqtgraph as pg
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
 from scipy.signal import hilbert
+from astropy.timeseries import LombScargle
 
 
 def button_file_clicked(app):
@@ -305,6 +306,7 @@ def button_tab_features_isiplot_clicked(app):
     layout = pg.GraphicsLayoutWidget()
     plot = layout.addPlot(row=0, col=0)
     plot.addLegend(offset=(-1, 1))
+    layout.setBackground('white')
 
     plot.addItem(pg.BarGraphItem(x0=edges[:-1], width=np.diff(edges), height=densities, brush=pg.mkBrush('#e24a33')))
     plot.addItem(pg.PlotDataItem(x, y, name='Gaussian Mixture', pen=pg.mkPen('cornflowerblue', width=2)))
@@ -314,9 +316,8 @@ def button_tab_features_isiplot_clicked(app):
     plot.getAxis('left').setLabel('Density')
     plot.getAxis('bottom').setLabel('log(ISI)')
     plot.setTitle('Log-Interspike-Interval Histogram')
-    layout.setBackground('white')
 
-    app.generate_plot_window(layout, 'isi', 'Inter-spike Intervals')
+    app.generate_plot_window(layout, 'Inter-spike Intervals')
 
 
 def button_tab_features_spikeoscillationsplot_clicked(app):
@@ -341,6 +342,7 @@ def button_tab_features_spikeoscillationsplot_clicked(app):
     plot1 = layout.addPlot(row=1, col=0)
     plot2 = layout.addPlot(row=2, col=0)
     plot3 = layout.addPlot(row=3, col=0)
+    layout.setBackground('white')
     # Need to make it such that they share common axes. Largest range gets linked.
     wave_colour = '#e24a33'
 
@@ -417,29 +419,13 @@ def button_tab_features_spikeoscillationsplot_clicked(app):
     plot2.getAxis('left').setLabel('Low Beta')
     plot3.getAxis('left').setLabel('High Beta')
     plot0.setTitle('Spiketrain Oscillations Waveforms')
-    layout.setBackground('white')
-
-    # ymax = np.max([spike_oscillations_theta_wave, spike_oscillations_alpha_wave, spike_oscillations_low_beta_wave, spike_oscillations_high_beta_wave])
-    # ymin = np.min([spike_oscillations_theta_wave, spike_oscillations_alpha_wave, spike_oscillations_low_beta_wave, spike_oscillations_high_beta_wave])
-    # xmin = spike_oscillations_theta_times[0]
-    # xmax = spike_oscillations_theta_times[-1]
-    # # plot0.setXRange(xmin, xmax)
-    # plot1.setXRange(xmin, xmax)
-    # plot2.setXRange(xmin, xmax)
-    # plot3.setXRange(xmin, xmax)
-    # plot0.setYRange(ymin, ymax)
-    # plot1.setYRange(ymin, ymax)
-    # plot2.setYRange(ymin, ymax)
-    # plot3.setYRange(ymin, ymax)
 
     plot1.setXLink(plot0)
     plot2.setXLink(plot0)
     plot3.setXLink(plot0)
-    plot1.setYLink(plot0)
-    plot2.setYLink(plot0)
-    plot3.setYLink(plot0)
+    misc.link_max_yaxis([plot0, plot1, plot2, plot3], [spike_oscillations_theta_wave, spike_oscillations_alpha_wave, spike_oscillations_low_beta_wave, spike_oscillations_high_beta_wave])
 
-    app.generate_plot_window(layout, 'spikeoscillations', 'Spiketrain Oscillations')
+    app.generate_plot_window(layout, 'Spiketrain Oscillations')
 
 
 def button_tab_features_lfpplot_clicked(app):
@@ -556,15 +542,70 @@ def button_tab_features_lfpplot_clicked(app):
     plot1.setTitle('LFP Waveforms')
 
     # There is a bug with the theta and alpha plots. Figure this out.
-    # plot2.setXLink(plot1)
-    # plot3.setXLink(plot1)
-    # plot4.setXLink(plot1)
-    # plot2.setYLink(plot1)
-    # plot3.setYLink(plot1)
-    # plot4.setYLink(plot1)
+    # misc.link_max_yaxis([plot1, plot2, plot3, plot4], [lfp_theta_wave, lfp_alpha_wave, lfp_low_beta_wave, lfp_high_beta_wave])
+    plot2.setXLink(plot1)
+    plot3.setXLink(plot1)
+    plot4.setXLink(plot1)
     
-    app.generate_plot_window(layout, 'lfp', 'LFP Oscillations')
+    app.generate_plot_window(layout, 'LFP Oscillations')
 
 
 def button_tab_features_autocorrelationplot_clicked(app):
-    pass
+    spike_times = app.channeldata.current_spike_indices / app.channeldata.fs
+    bin_size = 10e-3
+    max_lag = 500e-3
+
+    bins = np.arange(0, np.max(spike_times) + bin_size, bin_size)
+    spike_counts = np.histogram(spike_times, bins=bins)[0]
+    autocorr = np.correlate(spike_counts, spike_counts, mode='full')[len(spike_counts) - 1:]
+    autocorr_lag = np.arange(0, len(autocorr)) * bin_size
+    autocorr = autocorr[autocorr_lag <= max_lag]
+    autocorr_lag = autocorr_lag[autocorr_lag <= max_lag]
+
+    autocorr, autocorr_lag = analysis.autocorrelation(spike_times, bin_size, max_lag)
+
+    freqs_theta = np.linspace(4, 8, num=1000)
+    freqs_alpha = np.linspace(8, 12, num=1000)
+    freqs_low_beta = np.linspace(12, 21, num=1000)
+    freqs_high_beta = np.linspace(21, 30, num=1000)
+
+    ls = LombScargle(autocorr_lag, autocorr)
+    power_theta = ls.power(freqs_theta)
+    power_alpha = ls.power(freqs_alpha)
+    power_low_beta = ls.power(freqs_low_beta)
+    power_high_beta = ls.power(freqs_high_beta)
+
+    layout = pg.GraphicsLayoutWidget()
+    plot0 = layout.addPlot(row=0, col=0, rowspan=4)
+    plot1 = layout.addPlot(row=0, col=1)
+    plot2 = layout.addPlot(row=1, col=1)
+    plot3 = layout.addPlot(row=2, col=1)
+    plot4 = layout.addPlot(row=3, col=1)
+    layout.setBackground('white')
+    curve_colour = '#e24a33'
+
+    plot0.addItem(pg.PlotDataItem(autocorr_lag, autocorr, pen=pg.mkPen('k', width=1.5)))
+
+    plot1.addItem(pg.PlotDataItem(freqs_theta, power_theta, pen=pg.mkPen(curve_colour, width=1.5)))
+    plot2.addItem(pg.PlotDataItem(freqs_alpha, power_alpha, pen=pg.mkPen(curve_colour, width=1.5)))
+    plot3.addItem(pg.PlotDataItem(freqs_low_beta, power_low_beta, pen=pg.mkPen(curve_colour, width=1.5)))
+    plot4.addItem(pg.PlotDataItem(freqs_high_beta, power_high_beta, pen=pg.mkPen(curve_colour, width=1.5)))
+    
+    plot0.setXRange(0, 0.5)
+    plot1.setXRange(4, 8)
+    plot2.setXRange(8, 12)
+    plot3.setXRange(12, 21)
+    plot4.setXRange(21, 30)
+
+    plot0.getAxis('bottom').setLabel('Lag time (s)')
+    plot0.setTitle('Autocorrelation')
+    plot4.getAxis('bottom').setLabel('Frequency (Hz)')
+    plot1.setTitle('Power Spectrum')
+    plot1.getAxis('left').setLabel('Theta')
+    plot2.getAxis('left').setLabel('Alpha')
+    plot3.getAxis('left').setLabel('Low Beta')
+    plot4.getAxis('left').setLabel('High Beta')
+
+    misc.link_max_yaxis([plot1, plot2, plot3, plot4], [power_theta, power_alpha, power_low_beta, power_high_beta])
+
+    app.generate_plot_window(layout, 'Autocorrelation')

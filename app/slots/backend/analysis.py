@@ -277,3 +277,16 @@ def burst_threshold(data, fs_lfp=None, data_type='lfp'):
 
 def get_LFP_data(raw_data, fs, fs_lfp):
         return ds.run(raw_data, fs, fs_lfp)
+
+
+def autocorrelation(spike_times, bin_size, max_lag):
+    bins = np.arange(0, np.max(spike_times) + bin_size, bin_size)
+    spike_counts = np.histogram(spike_times, bins=bins)[0]
+    autocorr = np.correlate(spike_counts, spike_counts, mode='full')[len(spike_counts) - 1:]
+    # Following 2 lines are potential faster replacement for above line.
+    # import scipy
+    # autocorr = scipy.signal.correlate(spike_counts, spike_counts)
+    autocorr_lag = np.arange(0, len(autocorr)) * bin_size
+    autocorr = autocorr[autocorr_lag <= max_lag]
+    autocorr_lag = autocorr_lag[autocorr_lag <= max_lag]
+    return autocorr, autocorr_lag

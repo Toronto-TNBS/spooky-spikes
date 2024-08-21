@@ -74,3 +74,15 @@ def boundary_plotitems(times, wave, start, duration):
     x0 = times[start]
     x1 = times[start] + duration
     return pg.PlotDataItem([x0, x0], y_range), pg.PlotDataItem([x1, x1], y_range)
+
+
+def link_max_yaxis(plot_items: list, plot_vectors: list):
+    # Following operation links all axes to that with largest amplitude.
+    items = {}
+    for i, item in enumerate(plot_items):
+        items[i] = item
+    max_power = np.argmax([np.max(np.abs(vector)) for vector in plot_vectors])
+    max_item = list(items.values())[max_power]
+    del items[max_power]
+    for item in items.values():
+        item.setYLink(max_item)
