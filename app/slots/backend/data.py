@@ -52,6 +52,9 @@ class ChannelData():
                                       'HighBeta': None},
                              'PSD': {'Freq': None,
                                      'Power': None}}
+        # I MAY NOT NEED WAVE AND PSD since they are calculated when window is opened.
+        # BUT THINK ABOUT INTEGRATING TO SIMPLIFY CODE SO WE AREN't CALLING ANALYSIS FUNCTIONS TWICE.
+        # Maybe better to just leave it like this.
     
 
     def get_current_signal(self):

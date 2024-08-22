@@ -18,17 +18,45 @@ def button_file_clicked(app):
     filepath = QFileDialog.getOpenFileName(caption='Open File', dir='.', filter=filetypes)[0]
     if filepath == '':
         return
+    
+    # Following lines reset all analysis.
+    if app.channeldata != None:    # If there was ever a channel selected beforehand. If not, no analyses possible.
+        # app.check_spikesorting.setChecked(False)
+        app.check_invertthreshold.setChecked(False)    # Will also turn OFF spikesorting if activated.
+        app.check_invertthreshold.setEnabled(False)
+        
+        app.entry_tab_main_madfactor.setText('')
+        button_tab_main_threshold_clicked(app)
+
+        app.entry_tab_main_hpcutoff.setText('')
+        app.entry_tab_main_lpcutoff.setText('')
+        app.check_filtering.setChecked(False)
+        app.check_filtering.setEnabled(False)
+
+        misc.update_lfp_features_display(app, clear=True)
+
+        app.entry_tab_main_madfactor.setEnabled(False)
+        app.button_tab_main_threshold.setEnabled(False)
+        app.check_tab_main_spiketrain.setEnabled(False)
+        app.check_tab_main_eventtimes.setEnabled(False)
+        app.check_tab_main_thresholdbar.setEnabled(False)
 
     file_data = files.load_spike2(filepath)
     app.filedata = file_data
 
     app.label_file.setText(file_data.filepath.split('/')[-1])
 
+    misc.remove_plot_items(app.plot2_tab_main, pg.PlotDataItem)
+    app.dropdown_channel.clear()
     app.dropdown_channel.addItems([f'Ch {ch_id}' for ch_id in app.filedata.channels.keys()])
 
 
 def dropdown_channel_changed(app):
-    ch_id = int(app.dropdown_channel.currentText().split(' ')[-1])
+    dropdown_input = app.dropdown_channel.currentText()
+    if dropdown_input == '':
+        return
+    
+    ch_id = int(dropdown_input.split(' ')[-1])
 
     if app.channeldata != None:    # If channel selected previously.
         # Reset analysis:
@@ -155,7 +183,8 @@ def button_tab_main_filtering_clicked(app):
     app.plot2_tab_main.removeItem(current_signal_item)
     app.plot2_tab_main.addItem(pg.PlotDataItem(np.arange(len(app.channeldata.filtered_signal)) / app.channeldata.fs, app.channeldata.filtered_signal, pen=pg.mkPen('cornflowerblue', width=1.5)))
 
-    button_tab_main_threshold_clicked(app)    # Runs after (re)filtering according to user-defined parameters.
+    if app.channeldata.threshold != None:    # Does not run if there was never a threshold set.
+        button_tab_main_threshold_clicked(app)    # Runs after (re)filtering according to user-defined parameters.
 
 
 def button_tab_main_threshold_clicked(app):

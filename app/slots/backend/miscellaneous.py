@@ -62,11 +62,19 @@ def update_unit_features_display(app, ss='', clear=False):
     app.label_tab_features_spiketrain_highbetaburstduration_status.setText(burst_highbeta)
 
 
-def update_lfp_features_display(app):
-     app.label_tab_features_lfp_thetapower_status.setText(str(round(app.channeldata.features_lfp['Power']['Theta'], 2)))
-     app.label_tab_features_lfp_alphapower_status.setText(str(round(app.channeldata.features_lfp['Power']['Alpha'], 2)))
-     app.label_tab_features_lfp_lowbetapower_status.setText(str(round(app.channeldata.features_lfp['Power']['LowBeta'], 2)))
-     app.label_tab_features_lfp_highbetapower_status.setText(str(round(app.channeldata.features_lfp['Power']['HighBeta'], 2)))
+def update_lfp_features_display(app, clear=False):
+    if clear:
+        theta, alpha, lowbeta, highbeta = '', '', '', ''
+    else:
+        theta = str(round(app.channeldata.features_lfp['Power']['Theta'], 2))
+        alpha = str(round(app.channeldata.features_lfp['Power']['Alpha'], 2))
+        lowbeta = str(round(app.channeldata.features_lfp['Power']['LowBeta'], 2))
+        highbeta = str(round(app.channeldata.features_lfp['Power']['HighBeta'], 2))
+    
+    app.label_tab_features_lfp_thetapower_status.setText(theta)
+    app.label_tab_features_lfp_alphapower_status.setText(alpha)
+    app.label_tab_features_lfp_lowbetapower_status.setText(lowbeta)
+    app.label_tab_features_lfp_highbetapower_status.setText(highbeta)
 
     
 def boundary_plotitems(times, wave, start, duration):

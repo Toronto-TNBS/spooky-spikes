@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import *
 from PySide6 import QtCore
+from PySide6 import QtGui
 from PySide6.QtCore import Slot
 import pyqtgraph as pg
 import numpy as np
@@ -14,6 +15,8 @@ class App(QApplication):
     def __init__(self):
         super().__init__()
 
+
+
         # The following two variables allow for continuous tracking of data.
         self.filedata = None    # Loaded file data.
         self.channeldata = None    # Selected channel data.
@@ -27,7 +30,6 @@ class App(QApplication):
         self.setStyleSheet(STYLESHEET)
 
         self.window_main, self.grid_main = self.init_main_window()
-        self.window_main.setWindowTitle('Spooky Spikes')
 
         self.frame_control, self.grid_control = self.init_control_frame()
         self.grid_main.addWidget(self.frame_control, 0, 0)
@@ -439,6 +441,8 @@ class App(QApplication):
     def init_main_window(self):
         window = QWidget()
         window.resize(950, 700)
+        window.setWindowTitle('Spooky Spikes')
+        window.setWindowIcon(QtGui.QIcon('app/images/tnbs_logo_cropped.png'))
 
         grid = QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
