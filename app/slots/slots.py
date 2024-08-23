@@ -41,10 +41,16 @@ def button_file_clicked(app):
         app.check_tab_main_eventtimes.setEnabled(False)
         app.check_tab_main_thresholdbar.setEnabled(False)
 
-    file_data = files.load_spike2(filepath)
-    app.filedata = file_data
+    file_ext = filepath.split('.')[-1]
+    # Section returns complete FileData object.
+    if file_ext in ['smr', 'smrx']:
+        app.filedata = files.load_spike2(filepath)
+    elif file_ext == 'mat':
+        app.filedata = files.load_mat(filepath)
+    elif file_ext == 'csv':
+        app.filedata = files.load_csv(filepath)
 
-    app.label_file.setText(file_data.filepath.split('/')[-1])
+    app.label_file.setText(app.filedata.filepath.split('/')[-1])
 
     misc.remove_plot_items(app.plot2_tab_main, pg.PlotDataItem)
     app.dropdown_channel.clear()

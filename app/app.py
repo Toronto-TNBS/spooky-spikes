@@ -16,7 +16,6 @@ class App(QApplication):
         super().__init__()
 
 
-
         # The following two variables allow for continuous tracking of data.
         self.filedata = None    # Loaded file data.
         self.channeldata = None    # Selected channel data.
@@ -442,7 +441,7 @@ class App(QApplication):
         window = QWidget()
         window.resize(950, 700)
         window.setWindowTitle('Spooky Spikes')
-        window.setWindowIcon(QtGui.QIcon('app/images/tnbs_logo_cropped.png'))
+        window.setWindowIcon(QtGui.QIcon('app/images/tnbs_logo.png'))
 
         grid = QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
