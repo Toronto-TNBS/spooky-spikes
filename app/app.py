@@ -8,6 +8,7 @@ from app.slots import slots
 
 with open(f'{__file__[:-7]}/styles/styles.css', 'r') as file:
     STYLESHEET = file.read()
+ICON_PATH = 'app/images/tnbs_logo.png'
 
 
 class App(QApplication):
@@ -25,6 +26,7 @@ class App(QApplication):
                                   'Spiketrain Oscillations': None,
                                   'LFP Oscillations': None,
                                   'Autocorrelation': None}
+        self.message = None    # For status messages/errors.
 
         self.setStyleSheet(STYLESHEET)
 
@@ -84,6 +86,12 @@ class App(QApplication):
 
         self.dropdown_export = QComboBox()
         self.grid_control.addWidget(self.dropdown_export, 9, 0, 1, 3)
+        self.dropdown_export.setPlaceholderText('Select export method')
+        self.dropdown_export.addItems(['Features', 'Segment and spikes'])
+
+        self.button_export = QPushButton('Export')
+        self.grid_control.addWidget(self.button_export, 10, 0, 1, 1)
+        self.button_export.clicked.connect(lambda: slots.button_export_clicked(self))
 
         self.grid_control.setRowStretch(self.grid_control.rowCount(), 1)    # Set empty row as stretching, so it takes up remainder of space at bottom.
 
@@ -441,7 +449,7 @@ class App(QApplication):
         window = QWidget()
         window.resize(950, 700)
         window.setWindowTitle('Spooky Spikes')
-        window.setWindowIcon(QtGui.QIcon('app/images/tnbs_logo.png'))
+        window.setWindowIcon(QtGui.QIcon(ICON_PATH))
 
         grid = QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
@@ -521,8 +529,22 @@ class App(QApplication):
     def generate_plot_window(self, plot_layout, plot_type):
         window = QWidget()
         window.setWindowTitle(plot_type)
+        window.setWindowIcon(QtGui.QIcon(ICON_PATH))
         grid = QGridLayout()
         window.setLayout(grid)
         grid.addWidget(plot_layout, 0, 0)
         window.show()
         self.open_plot_windows[plot_type] = window
+    
+
+    def show_popup_window(self, title, message, submessage=None, icon=None):
+        window = QMessageBox()
+        window.setWindowTitle(title)
+        window.setWindowIcon(QtGui.QIcon(ICON_PATH))
+        window.setText(message)
+        if submessage is not None:
+            window.setInformativeText(submessage)
+        if icon is not None:
+            window.setIcon(icon)
+        window.show()
+        self.message = window

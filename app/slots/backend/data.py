@@ -10,6 +10,8 @@ class ChannelData():
         self.fs = fs
 
         self.filtered_signal = None
+        self.hpcutoff = None
+        self.lpcutoff = None
         self.threshold_factor = None
         self.threshold = None
         self.spike_indices_all = None

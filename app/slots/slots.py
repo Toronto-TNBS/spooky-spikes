@@ -102,6 +102,8 @@ def check_filtering_changed(app):
         app.check_spikesorting.setChecked(False)
 
         app.channeldata.filtered_signal = None
+        app.channeldata.hpcutoff = None
+        app.channeldata.lpcutoff = None
         current_signal_item = app.plot2_tab_main.listDataItems()[0]
         app.plot2_tab_main.removeItem(current_signal_item)
         app.plot2_tab_main.addItem(pg.PlotDataItem(np.arange(len(app.channeldata.raw_signal)) / app.channeldata.fs, app.channeldata.raw_signal, pen=pg.mkPen('cornflowerblue', width=1.5)))
@@ -158,7 +160,7 @@ def check_spikesorting_changed(app):
 
     cluster_colour_names = ['red', 'blue', 'green', 'cyan', 'magenta', 'yellow']
     app.dropdown_tab_main_cluster.clear()
-    app.dropdown_tab_main_cluster.addItems(cluster_colour_names[:len(existing_clusters)] + ['none'])
+    app.dropdown_tab_main_cluster.addItems(cluster_colour_names[:len(existing_clusters)] + ['all'])
     app.dropdown_tab_main_cluster.setCurrentIndex(app.channeldata.selected_cluster_label)    # Setting index computes all features within corresponding slot.
 
 
@@ -168,22 +170,54 @@ def check_invertthreshold_changed(app):
     button_tab_main_threshold_clicked(app)    # Restarts the threshold analysis with inverted parameter. Displays results on main plot.
 
 
+def button_export_clicked(app):
+    selected = app.dropdown_export.currentText()
+
+    if app.filedata is None:
+        app.show_popup_window(title='Warning', message='Cannot export', submessage='No file has been imported.', icon=QMessageBox.Warning)
+        return
+    elif app.channeldata is None:    # Case where file just imported and no channel selected. No features available.
+        app.show_popup_window(title='Warning', message='Cannot export', submessage='No channel has been selected.', icon=QMessageBox.Warning)
+        return
+    elif selected == 'Segment and spikes' and app.channeldata.threshold is None:
+        app.show_popup_window(title='Warning', message='Cannot export', submessage='No spikes available. You must first set a threshold to identify spiking events.', icon=QMessageBox.Warning)
+        return
+    
+    if selected == 'Features':
+        filetypes = 'Comma Separated Values (*.csv)'
+    elif selected == 'Segment and spikes':
+        filetypes = 'Spike2 Datafiles (*.smr);;MAT-Files (*.mat);;Comma Separated Values (*.csv)'
+    filepath = QFileDialog.getSaveFileName(caption='Save File', dir='.', filter=filetypes)[0]
+    if filepath == '':
+        return
+
+    if selected == 'Features':
+        status = files.save_features(filepath, app.channeldata, app.filedata)
+    elif selected == 'Segment and spikes':
+        status = files.save_segment(filepath, app.channeldata.raw_signal, app.channeldata.current_spike_indices, app.channeldata.fs, timebase=app.filedata.timebase)
+    
+    if status == 0:
+        app.show_popup_window(title='Success', message='File saved successfully.')
+    else:
+        app.show_popup_window(title='Error', message='File not saved.', submessage='An error occurred while trying to save your data.', icon=QMessageBox.Critical)
+
+
 def button_tab_main_filtering_clicked(app):
     app.check_spikesorting.setChecked(False)
 
-    hpcutoff = misc.check_convert_string(app.entry_tab_main_hpcutoff.text(), float)
-    lpcutoff = misc.check_convert_string(app.entry_tab_main_lpcutoff.text(), float)
+    app.channeldata.hpcutoff = misc.check_convert_string(app.entry_tab_main_hpcutoff.text(), float)
+    app.channeldata.lpcutoff = misc.check_convert_string(app.entry_tab_main_lpcutoff.text(), float)
     
-    app.label_tab_main_filterstatus.setText(f'HP: {hpcutoff}\nLP: {lpcutoff}')
+    app.label_tab_main_filterstatus.setText(f'HP: {app.channeldata.hpcutoff}\nLP: {app.channeldata.lpcutoff}')
     
-    if hpcutoff == None and lpcutoff == None:
+    if app.channeldata.hpcutoff == None and app.channeldata.lpcutoff == None:
         app.channeldata.filtered_signal = None
         current_signal_item = app.plot2_tab_main.listDataItems()[0]
         app.plot2_tab_main.removeItem(current_signal_item)
         app.plot2_tab_main.addItem(pg.PlotDataItem(np.arange(len(app.channeldata.raw_signal)) / app.channeldata.fs, app.channeldata.raw_signal, pen=pg.mkPen('cornflowerblue', width=1.5)))
         return
     
-    app.channeldata.filtered_signal = analysis.butterworth_filter(app.channeldata.raw_signal, app.channeldata.fs, hpcutoff, lpcutoff)
+    app.channeldata.filtered_signal = analysis.butterworth_filter(app.channeldata.raw_signal, app.channeldata.fs, app.channeldata.hpcutoff, app.channeldata.lpcutoff)
     
     current_signal_item = app.plot2_tab_main.listDataItems()[0]    # Will have to assess list ordering issues when I add threshold bar to this plot and removing objects.
     app.plot2_tab_main.removeItem(current_signal_item)
@@ -211,6 +245,7 @@ def button_tab_main_threshold_clicked(app):
         app.channeldata.threshold = None
         app.channeldata.threshold_factor = None
         app.channeldata.spike_indices_all = None
+        app.channeldata.current_spike_indices = None
         app.check_tab_main_spiketrain.setChecked(False)
         app.check_tab_main_eventtimes.setChecked(False)
         app.check_tab_main_thresholdbar.setChecked(False)
@@ -298,7 +333,7 @@ def check_tab_main_thresholdbar_changed(app):
 
 
 def dropdown_tab_main_cluster_changed(app):
-    if app.dropdown_tab_main_cluster.currentText() == 'none' or app.dropdown_tab_main_cluster.currentText() == '':
+    if app.dropdown_tab_main_cluster.currentText() == 'all' or app.dropdown_tab_main_cluster.currentText() == '':
         # Empty string for if dropdown items are cleared.
         app.channeldata.current_spike_indices = app.channeldata.spike_indices_all
         app.channeldata.selected_cluster_label = None
