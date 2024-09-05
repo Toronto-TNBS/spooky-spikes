@@ -448,7 +448,7 @@ class App(QApplication):
     def init_main_window(self):
         window = QWidget()
         window.resize(950, 700)
-        window.setWindowTitle('Spooky Spikes')
+        window.setWindowTitle('Spooky Spikes v2.0.0')
         window.setWindowIcon(QtGui.QIcon(ICON_PATH))
 
         grid = QGridLayout()
