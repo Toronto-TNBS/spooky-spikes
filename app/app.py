@@ -8,8 +8,7 @@ from app.slots import slots
 
 with open(f'{__file__[:-7]}/styles/styles.css', 'r') as file:
     STYLESHEET = file.read()
-ICON_PATH = 'app/images/tnbs_logo.png'
-
+ICON_PATH = f'{__file__[:-7]}/images/tnbs_logo.png'
 
 class App(QApplication):
 
