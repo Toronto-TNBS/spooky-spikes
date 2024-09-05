@@ -92,6 +92,7 @@ class App(QApplication):
         self.button_export = QPushButton('Export')
         self.grid_control.addWidget(self.button_export, 10, 0, 1, 1)
         self.button_export.clicked.connect(lambda: slots.button_export_clicked(self))
+        self.button_export.setEnabled(False)
 
         self.grid_control.setRowStretch(self.grid_control.rowCount(), 1)    # Set empty row as stretching, so it takes up remainder of space at bottom.
 

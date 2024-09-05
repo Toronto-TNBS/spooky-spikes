@@ -41,6 +41,8 @@ def button_file_clicked(app):
         app.check_tab_main_eventtimes.setEnabled(False)
         app.check_tab_main_thresholdbar.setEnabled(False)
 
+        app.button_tab_features_lfpplot.setEnabled(False)
+
     file_ext = filepath.split('.')[-1]
     # Section returns complete FileData object.
     if file_ext in ['smr', 'smrx']:
@@ -55,6 +57,8 @@ def button_file_clicked(app):
     misc.remove_plot_items(app.plot2_tab_main, pg.PlotDataItem)
     app.dropdown_channel.clear()
     app.dropdown_channel.addItems([f'Ch {ch_id}' for ch_id in app.filedata.channels.keys()])
+
+    app.button_export.setEnabled(False)
 
 
 def dropdown_channel_changed(app):
@@ -85,6 +89,8 @@ def dropdown_channel_changed(app):
     app.entry_tab_main_madfactor.setEnabled(True)
     app.button_tab_main_threshold.setEnabled(True)
     app.button_tab_features_lfpplot.setEnabled(True)
+
+    app.button_export.setEnabled(True)
 
     # Compute and display features
     app.channeldata.compute_features_lfp()
@@ -173,11 +179,8 @@ def check_invertthreshold_changed(app):
 def button_export_clicked(app):
     selected = app.dropdown_export.currentText()
 
-    if app.filedata is None:
-        app.show_popup_window(title='Warning', message='Cannot export', submessage='No file has been imported.', icon=QMessageBox.Warning)
-        return
-    elif app.channeldata is None:    # Case where file just imported and no channel selected. No features available.
-        app.show_popup_window(title='Warning', message='Cannot export', submessage='No channel has been selected.', icon=QMessageBox.Warning)
+    if selected == '':
+        app.show_popup_window(title='Warning', message='Cannot export', submessage='No export method selected. Please select a method to save data.', icon=QMessageBox.Warning)
         return
     elif selected == 'Segment and spikes' and app.channeldata.threshold is None:
         app.show_popup_window(title='Warning', message='Cannot export', submessage='No spikes available. You must first set a threshold to identify spiking events.', icon=QMessageBox.Warning)
@@ -634,48 +637,26 @@ def button_tab_features_autocorrelationplot_clicked(app):
 
     autocorr, autocorr_lag = analysis.autocorrelation(spike_times, bin_size, max_lag)
 
-    freqs_theta = np.linspace(4, 8, num=1000)
-    freqs_alpha = np.linspace(8, 12, num=1000)
-    freqs_low_beta = np.linspace(12, 21, num=1000)
-    freqs_high_beta = np.linspace(21, 30, num=1000)
-
+    freqs = np.linspace(0, 30, num=1000)
     ls = LombScargle(autocorr_lag, autocorr)
-    power_theta = ls.power(freqs_theta)
-    power_alpha = ls.power(freqs_alpha)
-    power_low_beta = ls.power(freqs_low_beta)
-    power_high_beta = ls.power(freqs_high_beta)
+    power = ls.power(freqs)
 
     layout = pg.GraphicsLayoutWidget()
-    plot0 = layout.addPlot(row=0, col=0, rowspan=4)
+    plot0 = layout.addPlot(row=0, col=0)
     plot1 = layout.addPlot(row=0, col=1)
-    plot2 = layout.addPlot(row=1, col=1)
-    plot3 = layout.addPlot(row=2, col=1)
-    plot4 = layout.addPlot(row=3, col=1)
     layout.setBackground('white')
     curve_colour = '#e24a33'
 
     plot0.addItem(pg.PlotDataItem(autocorr_lag, autocorr, pen=pg.mkPen('k', width=1.5)))
-
-    plot1.addItem(pg.PlotDataItem(freqs_theta, power_theta, pen=pg.mkPen(curve_colour, width=1.5)))
-    plot2.addItem(pg.PlotDataItem(freqs_alpha, power_alpha, pen=pg.mkPen(curve_colour, width=1.5)))
-    plot3.addItem(pg.PlotDataItem(freqs_low_beta, power_low_beta, pen=pg.mkPen(curve_colour, width=1.5)))
-    plot4.addItem(pg.PlotDataItem(freqs_high_beta, power_high_beta, pen=pg.mkPen(curve_colour, width=1.5)))
+    plot1.addItem(pg.PlotDataItem(freqs, power, pen=pg.mkPen(curve_colour, width=1.5)))
     
     plot0.setXRange(0, 0.5)
-    plot1.setXRange(4, 8)
-    plot2.setXRange(8, 12)
-    plot3.setXRange(12, 21)
-    plot4.setXRange(21, 30)
+    plot1.setXRange(0, 30)
 
     plot0.getAxis('bottom').setLabel('Lag time (s)')
     plot0.setTitle('Autocorrelation')
-    plot4.getAxis('bottom').setLabel('Frequency (Hz)')
+    plot1.getAxis('bottom').setLabel('Frequency (Hz)')
     plot1.setTitle('Power Spectrum')
-    plot1.getAxis('left').setLabel('Theta')
-    plot2.getAxis('left').setLabel('Alpha')
-    plot3.getAxis('left').setLabel('Low Beta')
-    plot4.getAxis('left').setLabel('High Beta')
-
-    misc.link_max_yaxis([plot1, plot2, plot3, plot4], [power_theta, power_alpha, power_low_beta, power_high_beta])
-
+    plot1.getAxis('left').setLabel('Spectral Power')
+   
     app.generate_plot_window(layout, 'Autocorrelation')
