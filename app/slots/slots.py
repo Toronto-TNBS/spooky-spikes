@@ -189,7 +189,7 @@ def button_export_clicked(app):
     if selected == 'Features':
         filetypes = 'Comma Separated Values (*.csv)'
     elif selected == 'Segment and spikes':
-        filetypes = 'Spike2 Datafiles (*.smr);;MAT-Files (*.mat);;Comma Separated Values (*.csv)'
+        filetypes = 'MAT-Files (*.mat);;Comma Separated Values (*.csv)'
     filepath = QFileDialog.getSaveFileName(caption='Save File', dir='.', filter=filetypes)[0]
     if filepath == '':
         return

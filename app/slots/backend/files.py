@@ -1,28 +1,21 @@
-from sonpy import lib as son
 import math
 from app.slots.backend import data
 import scipy.io as spio
 import mat73
 import pandas as pd
 import numpy as np
+import neo
 
 
 def load_spike2(filepath):
-    file = son.SonFile(filepath, True)
-
-    wave_channels = [i for i in range(file.MaxChannels()) if file.ChannelType(i) == son.DataType.Adc or file.ChannelType == son.DataType.RealWave]
+    load = neo.io.Spike2IO(filepath).read_block().segments[0].analogsignals[0]
+    fs = float(load.sampling_rate.magnitude)
     channels = {}
-    for channel_idx in wave_channels:
-        timebase = file.GetTimeBase()    # s/tick
-        fs = 1 / (file.ChannelDivide(channel_idx) * timebase)    # 1 / ([tick] [s/tick])
-        num_points = math.floor(file.ChannelMaxTime(channel_idx) * timebase * fs)    # [tick] [s/tick] [sample/s]
-
-        signal = file.ReadFloats(channel_idx, num_points, 0)
-
-        channel_data = data.ChannelData(channel_idx, signal, fs)
-        channels[channel_idx+1] = channel_data
-    
-    file_data = data.FileData(filepath, channels, timebase=timebase)
+    for i, chid in enumerate(load.array_annotations["channel_ids"]):
+        signal = load[:, i].magnitude.flatten()
+        channel_data = data.ChannelData(int(chid), signal, fs)
+        channels[int(chid)] = channel_data
+    file_data = data.FileData(filepath, channels)
 
     return file_data
 
@@ -118,66 +111,9 @@ def save_features(filepath, channel, file):
 
 def save_segment(filepath, signal, events, fs, timebase=None):
     filetype = filepath.split('.')[-1]
-    if filetype == 'smr':
-        status = save_smr(filepath, signal, events, fs, timebase)
-    elif filetype == 'mat':
+    if filetype == 'mat':
         status = save_mat(filepath, signal, events, fs)
     return status
-
-
-def save_smr(filepath, signal, events, fs, timebase):
-    events = events/fs
-    wave_time_base = timebase
-    wave_sample_ticks = int(1 / (fs * wave_time_base))
-
-    filename = filepath
-    new = son.SonFile(filename)
-
-    wave_offset = 0
-    wave_scale = 1
-    wave_Y_low = -5
-    wave_Y_high = 5
-    wave_units = 'V'
-    wave_title = 'Waveform'
-    wave_Fs = fs
-    time_start = 0
-
-    new.SetTimeBase(wave_time_base)
-    new_wave_channel = 0
-
-    new.SetWaveChannel(new_wave_channel, wave_sample_ticks, son.DataType.Adc, wave_Fs)
-    new.SetChannelTitle(new_wave_channel, wave_title)
-    new.SetChannelUnits(new_wave_channel, wave_units)
-    new.SetChannelScale(new_wave_channel, wave_scale)
-    new.SetChannelOffset(new_wave_channel, wave_offset)
-    new.SetChannelYRange(new_wave_channel, wave_Y_low, wave_Y_high)
-
-    spike_channel = new.GetFreeChannel()
-    max_event_rate = 1 / (wave_time_base * wave_sample_ticks)
-
-    new.SetEventChannel(spike_channel, max_event_rate, son.DataType.EventFall)
-    new.SetChannelTitle(spike_channel, 'ST-1')
-    new.SetChannelUnits(spike_channel, wave_units)
-    new.SetChannelScale(spike_channel, wave_scale)
-    new.SetChannelOffset(spike_channel, wave_offset)
-    new.SetChannelYRange(spike_channel, wave_Y_low, wave_Y_high)
-    del new
-
-    reload = son.SonFile(filename, False)
-    scaled_wave = np.array(6553.6 * signal, dtype=int)
-    write_wave = reload.WriteInts(new_wave_channel, scaled_wave, time_start)
-    if write_wave < 0:
-        return -1
-
-    spike_ticks = [int(i / wave_time_base) for i in events]
-    spike_times_formatted = np.array(spike_ticks, dtype=np.int64)
-    write_train = reload.WriteEvents(spike_channel, spike_times_formatted)
-    if write_train < 0:
-        return -1
-
-    del reload
-
-    return 0
 
 
 def save_mat(filepath, signal, events, fs):
